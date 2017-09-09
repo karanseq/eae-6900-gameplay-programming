@@ -23,10 +23,16 @@ class EAE_6900_API UStatEffect : public UDamageType
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat Effect")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	EStatKind Stat = EStatKind::None;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat Effect")
-	float Delta = 0.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float Min = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float Max = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float Duration = 0.0f;
 
 };

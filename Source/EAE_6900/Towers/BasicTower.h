@@ -30,7 +30,7 @@ class EAE_6900_API ABasicTower : public APawn
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Behavior")
-	float										FireRate = 1.0f;
+	float										FireRate = 2.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behavior")
 	TSubclassOf<UStatEffect>					StatEffectClass;

@@ -6,6 +6,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 
+// game includes
+#include "StatsBuffs/StatEffect.h"
+
 #include "BasicEnemy.generated.h"
 
 // forward declarations
@@ -14,20 +17,38 @@ class UBoxComponent;
 class UStaticMeshComponent;
 
 // delegate declarations
-DECLARE_DELEGATE_OneParam(FEnemySpawnedEvent, const FString&);
 DECLARE_DELEGATE_OneParam(FEnemyKilledEvent, const FString&);
-DECLARE_DELEGATE_TwoParams(FEnemyProgressEvent, const FString&, int32);
+DECLARE_DELEGATE_ThreeParams(FEnemyTookDamageEvent, const FString&, float, EStatKind);
 
 UCLASS()
 class EAE_6900_API ABasicEnemy : public APawn
 {
 	GENERATED_UCLASS_BODY()
 
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Appearance")
 	UBoxComponent*								Box;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Appearance")
 	UStaticMeshComponent*						Mesh;
+
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	FORCEINLINE void SetPathDataActor(APathDataActor* PathDataActorIn) { PathDataActor = PathDataActorIn; }
+	FORCEINLINE FEnemyKilledEvent& GetEnemyKilledEvent() { return OnEnemyKilled; }
+	FORCEINLINE FEnemyTookDamageEvent& GetEnemyTookDamageEvent() { return OnEnemyTookDamage; }
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float										MaxHealth = 50;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float										CurrentHealth = 50;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float										MovementSpeed = 1.0f;
 
 protected:
 	virtual void BeginPlay() override;
@@ -35,23 +56,10 @@ protected:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	FORCEINLINE void SetPathDataActor(APathDataActor* PathDataActorIn) { PathDataActor = PathDataActorIn; }
-	FORCEINLINE FEnemySpawnedEvent& GetEnemySpawnedEvent() { return OnEnemySpawned; }
-	FORCEINLINE FEnemyKilledEvent& GetEnemyKilledEvent() { return OnEnemyKilled; }
-	FORCEINLINE FEnemyProgressEvent& GetEnemyProgressEvent() { return OnEnemyMadeProgress; }
-
 private:
 	APathDataActor*								PathDataActor = nullptr;
 	float										AccumulatedTime = 0.0f;
 
-	float										MovementSpeed = 0.5f;
-
-	FEnemySpawnedEvent							OnEnemySpawned;
 	FEnemyKilledEvent							OnEnemyKilled;
-	FEnemyProgressEvent							OnEnemyMadeProgress;
-
+	FEnemyTookDamageEvent						OnEnemyTookDamage;
 };

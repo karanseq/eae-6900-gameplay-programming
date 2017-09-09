@@ -30,7 +30,6 @@ ABasicEnemy::ABasicEnemy(const FObjectInitializer& ObjectInitializer)
 void ABasicEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	OnEnemySpawned.ExecuteIfBound(GetName());
 }
 
 void ABasicEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -61,21 +60,39 @@ void ABasicEnemy::Tick(float DeltaTime)
 			PathDataActor = nullptr;
 			Destroy();
 		}
-		else
-		{
-			uint8 ProgressPercentage = 100 * AccumulatedTime / PathDataActor->GetDuration();
-			if (ProgressPercentage > 0 && ProgressPercentage % 25 == 0)
-			{
-				OnEnemyMadeProgress.ExecuteIfBound(GetName(), ProgressPercentage);
-			}
-		}
 	}
 }
 
 float ABasicEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
-	Destroy();
+	UStatEffect const * const StatEffectCDO = DamageEvent.DamageTypeClass ? DamageEvent.DamageTypeClass->GetDefaultObject<UStatEffect>() : GetDefault<UStatEffect>();
 
-	return DamageAmount;
+	const float PreviousHealth = CurrentHealth;
+
+	switch (StatEffectCDO->Stat)
+	{
+	case EStatKind::Physical:
+		CurrentHealth -= FMath::FloorToFloat(FMath::RandRange(StatEffectCDO->Min, StatEffectCDO->Max));
+		break;
+
+	case EStatKind::Magic:
+		CurrentHealth -= FMath::FloorToFloat(FMath::RandRange(StatEffectCDO->Min, StatEffectCDO->Max));
+		break;
+
+	case EStatKind::Slow:
+		break;
+
+	case EStatKind::Stun:
+		break;
+	}
+
+	OnEnemyTookDamage.ExecuteIfBound(GetName(), PreviousHealth - CurrentHealth, StatEffectCDO->Stat);
+
+	if (CurrentHealth <= 0.0f)
+	{
+		Destroy();
+	}
+
+	return PreviousHealth - CurrentHealth;
 }
 

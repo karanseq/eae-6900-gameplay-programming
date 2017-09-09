@@ -62,7 +62,6 @@ void ABasicTower::FireProjectile()
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to spawn projectile!"));
 		}
-
 	}
 }
 

@@ -2,8 +2,13 @@
 
 #pragma once
 
+// engine includes
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+// game includes
+#include "StatsBuffs/StatEffect.h"
+
 #include "EnemySpawner.generated.h"
 
 // forward declarations
@@ -40,13 +45,10 @@ public:
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnEnemySpawned(const FString& EnemyName);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnEnemyKilled(const FString& EnemyName);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnEnemyMadeProgress(const FString& EnemyName, int32 Progress);
+	void OnEnemyTookDamage(const FString& EnemyName, float DamageAmount, EStatKind Type);
 
 private:
 	void SpawnAnActorAtRandom() const;
