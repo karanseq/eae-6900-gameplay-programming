@@ -3,10 +3,12 @@
 #include "BasicEnemy.h"
 
 // engine includes
+#include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/CollisionProfile.h"
 
 // game includes
-#include "PathDataActor.h"
+#include "Shared/PathDataActor.h"
 
 // Sets default values
 ABasicEnemy::ABasicEnemy(const FObjectInitializer& ObjectInitializer)
@@ -15,8 +17,13 @@ ABasicEnemy::ABasicEnemy(const FObjectInitializer& ObjectInitializer)
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	Box = CreateDefaultSubobject<UBoxComponent>("Box");
+	Box->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+	RootComponent = Box;
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	RootComponent = Mesh;
+	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
+	Mesh->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -39,7 +46,7 @@ void ABasicEnemy::Tick(float DeltaTime)
 
 	if (PathDataActor)
 	{
-		AccumulatedTime += DeltaTime;
+		AccumulatedTime += (DeltaTime * MovementSpeed);
 
 		FHitResult HitResult;
 		SetActorLocationAndRotation(PathDataActor->GetLocation(AccumulatedTime),
@@ -65,10 +72,10 @@ void ABasicEnemy::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
-void ABasicEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+float ABasicEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Destroy();
 
+	return DamageAmount;
 }
 

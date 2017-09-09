@@ -7,7 +7,7 @@
 
 // game includes
 #include "BasicEnemy.h"
-#include "PathDataActor.h"
+#include "Shared/PathDataActor.h"
 
 // Sets default values
 AEnemySpawner::AEnemySpawner(const FObjectInitializer& ObjectInitializer)
