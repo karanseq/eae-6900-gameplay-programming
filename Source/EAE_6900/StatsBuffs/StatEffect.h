@@ -12,10 +12,10 @@ UENUM(BlueprintType)
 enum class EStatKind : uint8
 {
 	None						UMETA(DisplayName = "Invalid Type"),
-	Physical					UMETA(DisplayName = "Physical"),
-	Magic						UMETA(DisplayName = "Magic"),
+	Physical					UMETA(DisplayName = "Physical Damage"),
+	Magic						UMETA(DisplayName = "Magic Damage"),
 	Stun						UMETA(DisplayName = "Stun"),
-	Slow						UMETA(DisplayName = "Slow"),
+	Slow						UMETA(DisplayName = "Slow Movement"),
 };
 
 UCLASS(Abstract)

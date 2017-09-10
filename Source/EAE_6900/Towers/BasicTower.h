@@ -22,15 +22,19 @@ class EAE_6900_API ABasicTower : public APawn
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Appearance")
+	//~==============================================================================
+	// Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent*							Sphere;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Appearance")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent*						Mesh;
 
+	//~==============================================================================
+	// Behavior
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Behavior")
-	float										FireRate = 2.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior")
+	float										FireRate = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behavior")
 	TSubclassOf<UStatEffect>					StatEffectClass;
@@ -47,8 +51,5 @@ protected:
 
 private:
 	void FireProjectile();
-
-private:
-	FTimerHandle								FireTimerHandle;
 
 };

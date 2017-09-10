@@ -59,6 +59,7 @@ void AEnemySpawner::SpawnAnActorAtRandom() const
 	SpawnedActor->SetPathDataActor(RandomSpline);
 	SpawnedActor->GetEnemyKilledEvent().BindUObject(this, &AEnemySpawner::OnEnemyKilled);
 	SpawnedActor->GetEnemyTookDamageEvent().BindUObject(this, &AEnemySpawner::OnEnemyTookDamage);
+	SpawnedActor->GetEnemyBlockedDamageEvent().BindUObject(this, &AEnemySpawner::OnEnemyBlockedDamage);
 
 	UGameplayStatics::FinishSpawningActor(SpawnedActor, SpawnTransform);
 }

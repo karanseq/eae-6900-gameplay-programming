@@ -45,10 +45,13 @@ public:
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnEnemyKilled(const FString& EnemyName);
+	void OnEnemyKilled(const FString& EnemyName, EStatKind Type);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnEnemyTookDamage(const FString& EnemyName, float DamageAmount, EStatKind Type);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnEnemyBlockedDamage(const FString& EnemyName, float DamageAmount, EStatKind Type);
 
 private:
 	void SpawnAnActorAtRandom() const;

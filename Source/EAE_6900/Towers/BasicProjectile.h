@@ -17,16 +17,22 @@ class EAE_6900_API ABasicProjectile : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	//~==============================================================================
+	// Components
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* Sphere = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* Mesh = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UProjectileMovementComponent* ProjectileMovement = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	//~==============================================================================
+	// Behavior
+public:
+	UPROPERTY(BlueprintReadOnly, Category = Weapon)
 	TSubclassOf<UStatEffect> StatEffectClass = nullptr;
 
 private:

@@ -31,7 +31,8 @@ void ABasicTower::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &ABasicTower::FireProjectile, FireRate, true);
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABasicTower::FireProjectile, FireRate, true);
 }
 
 void ABasicTower::FireProjectile()
