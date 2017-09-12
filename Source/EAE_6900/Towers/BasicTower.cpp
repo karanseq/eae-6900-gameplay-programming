@@ -32,10 +32,24 @@ void ABasicTower::BeginPlay()
 	Super::BeginPlay();
 	
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABasicTower::FireProjectile, FireRate, true);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABasicTower::OnAttackTimerElapsed, FireRate, true);
 }
 
-void ABasicTower::FireProjectile()
+void ABasicTower::OnAttackTimerElapsed()
+{
+	switch (Type)
+	{
+	case ETowerAttackType::Projectile:
+		DoProjectileAttack();
+		break;
+
+	case ETowerAttackType::AOE:
+		DoAOEAttack();
+		break;
+	}
+}
+
+void ABasicTower::DoProjectileAttack()
 {
 	TArray<AActor*> OverlappingActors;
 	Sphere->GetOverlappingActors(OverlappingActors, ABasicEnemy::StaticClass());
@@ -62,6 +76,23 @@ void ABasicTower::FireProjectile()
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to spawn projectile!"));
+		}
+	}
+}
+
+void ABasicTower::DoAOEAttack()
+{
+	TArray<AActor*> OverlappingActors;
+	Sphere->GetOverlappingActors(OverlappingActors, ABasicEnemy::StaticClass());
+
+	if (OverlappingActors.Num())
+	{
+		for (const auto& ActorToDamage : OverlappingActors)
+		{
+			FDamageEvent DamageEvent;
+			DamageEvent.DamageTypeClass = StatEffectClass;
+
+			ActorToDamage->TakeDamage(1.0f, DamageEvent, GetInstigatorController(), this);
 		}
 	}
 }

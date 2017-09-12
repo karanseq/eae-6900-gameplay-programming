@@ -17,6 +17,14 @@ class USphereComponent;
 class UStatEffect;
 class UStaticMeshComponent;
 
+UENUM(BlueprintType)
+enum class ETowerAttackType : uint8
+{
+	None						UMETA(DisplayName = "Invalid"),
+	Projectile					UMETA(DisplayName = "Projectile"),
+	AOE							UMETA(DisplayName = "Area of Effect")
+};
+
 UCLASS(BlueprintType)
 class EAE_6900_API ABasicTower : public APawn
 {
@@ -33,7 +41,10 @@ class EAE_6900_API ABasicTower : public APawn
 	//~==============================================================================
 	// Behavior
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behavior")
+	ETowerAttackType							Type = ETowerAttackType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior", meta = (UIMin = "0.1"))
 	float										FireRate = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behavior")
@@ -50,6 +61,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void FireProjectile();
+	void OnAttackTimerElapsed();
+	void DoProjectileAttack();
+	void DoAOEAttack();
 
 };
