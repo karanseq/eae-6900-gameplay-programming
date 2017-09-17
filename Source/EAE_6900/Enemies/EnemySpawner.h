@@ -51,6 +51,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
 	USpawnerComponent*						SpawnerComponent = nullptr;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Spawning")
+	bool									bAutoStart = false;
+
 public:
 	FORCEINLINE USpawnerComponent* GetSpawnerComponent() const { return SpawnerComponent; }
 

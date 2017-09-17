@@ -56,7 +56,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behavior")
 	TSubclassOf<ABasicProjectile>				ProjectileBP;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Behavior", meta=(MakeEditWidget = true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Behavior", meta=(MakeEditWidget = true))
 	FVector										MuzzleLocation;
 
 protected:
