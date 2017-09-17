@@ -14,36 +14,22 @@
 // forward declarations
 class ABasicEnemy;
 class APathDataActor;
+class USpawnerComponent;
 
 UCLASS()
 class EAE_6900_API AEnemySpawner : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-	TArray<APathDataActor*>					PathDataActors;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-	TArray<TSubclassOf<ABasicEnemy>>		EnemiesToSpawn;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning", meta=(UIMin = "1.0", UIMax = "5.0"))
-	float									SpawnRate = 2.5f;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable, Category = "Spawning")
-	void StartSpawning() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Spawning")
-	void StopSpawning() const;
-
+	//~==============================================================================
+	// Behavior
 public:
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnWaveStarted(int32 WaveIndex);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnWaveEnded(int32 WaveIndex);
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnEnemyKilled(const FString& EnemyName, EStatKind Type);
 
@@ -53,7 +39,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnEnemyBlockedDamage(const FString& EnemyName, float DamageAmount, EStatKind Type);
 
-private:
-	void SpawnAnActorAtRandom() const;
+protected:
+	UFUNCTION()
+	void OnEnemySpawned(AActor* SpawnedActor);
+
+	virtual void BeginPlay() override;
+
+	//~==============================================================================
+	// Components
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
+	USpawnerComponent*						SpawnerComponent = nullptr;
+
+public:
+	FORCEINLINE USpawnerComponent* GetSpawnerComponent() const { return SpawnerComponent; }
 
 }; // class AEnemySpawner
