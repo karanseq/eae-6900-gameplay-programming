@@ -9,6 +9,7 @@
 #include "Enemies/BasicEnemy.h"
 #include "Shared/PathDataActor.h"
 #include "Shared/SpawnerComponent.h"
+#include "Shared/TDPlayerController.h"
 
 // Sets default values
 AEnemySpawner::AEnemySpawner(const FObjectInitializer& ObjectInitializer)
@@ -18,21 +19,49 @@ AEnemySpawner::AEnemySpawner(const FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpawnerComponent = CreateDefaultSubobject<USpawnerComponent>(TEXT("SpawnerComponent"));
-	SpawnerComponent->GetOnActorSpawned().AddDynamic(this, &AEnemySpawner::OnEnemySpawned);
-	SpawnerComponent->GetOnWaveStarted().AddDynamic(this, &AEnemySpawner::OnWaveStarted);
-	SpawnerComponent->GetOnWaveEnded().AddDynamic(this, &AEnemySpawner::OnWaveEnded);
+	SpawnerComponent->GetOnActorSpawned().AddUObject(this, &AEnemySpawner::OnEnemySpawned);
+	SpawnerComponent->GetOnWaveStarted().AddUObject(this, &AEnemySpawner::NotifyWaveStarted);
+	SpawnerComponent->GetOnWaveEnded().AddUObject(this, &AEnemySpawner::NotifyWaveEnded);
 }
 
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	//SpawnerComponent->StartSpawning();
 }
 
 void AEnemySpawner::OnEnemySpawned(AActor* SpawnedActor)
 {
 	ABasicEnemy* SpawnedEnemy = Cast<ABasicEnemy>(SpawnedActor);
-	SpawnedEnemy->GetEnemyKilledEvent().BindUObject(this, &AEnemySpawner::OnEnemyKilled);
-	SpawnedEnemy->GetEnemyTookDamageEvent().BindUObject(this, &AEnemySpawner::OnEnemyTookDamage);
-	SpawnedEnemy->GetEnemyBlockedDamageEvent().BindUObject(this, &AEnemySpawner::OnEnemyBlockedDamage);
+	SpawnedEnemy->GetEnemyKilledEvent().AddUObject(this, &AEnemySpawner::NotifyEnemyKilled);
+	SpawnedEnemy->GetEnemyTookDamageEvent().AddUObject(this, &AEnemySpawner::OnEnemyTookDamage);
+	SpawnedEnemy->GetEnemyBlockedDamageEvent().AddUObject(this, &AEnemySpawner::OnEnemyBlockedDamage);
+
+	++NumEnemiesAlive;
+}
+
+void AEnemySpawner::NotifyEnemyKilled(const FString& EnemyName, EStatKind Type)
+{
+	OnEnemyKilled(EnemyName, Type);
+
+	--NumEnemiesAlive;
+	if (LastWaveThatEnded >= SpawnerComponent->GetWaveData()->WaveList.Num() - 1 &&
+		NumEnemiesAlive <= 0)
+	{
+		ATDPlayerController* Player = Cast<ATDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (Player)
+		{
+			Player->OnGameWin();
+		}
+	}
+}
+
+void AEnemySpawner::NotifyWaveStarted(int32 WaveIndex)
+{
+	OnWaveStarted(WaveIndex);
+}
+
+void AEnemySpawner::NotifyWaveEnded(int32 WaveIndex)
+{
+	LastWaveThatEnded = WaveIndex;
+	OnWaveEnded(WaveIndex);
 }

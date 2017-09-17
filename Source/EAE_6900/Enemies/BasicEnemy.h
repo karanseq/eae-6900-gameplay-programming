@@ -19,8 +19,8 @@ class UBoxComponent;
 class UStaticMeshComponent;
 
 // delegate declarations
-DECLARE_DELEGATE_TwoParams(FEnemyKilledEvent, const FString&, EStatKind);
-DECLARE_DELEGATE_ThreeParams(FEnemyDamageEvent, const FString&, float, EStatKind);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyKilledEvent, const FString&, EStatKind);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FEnemyDamageEvent, const FString&, float, EStatKind);
 
 UCLASS()
 class EAE_6900_API ABasicEnemy : public APawn, public IBuffInterface

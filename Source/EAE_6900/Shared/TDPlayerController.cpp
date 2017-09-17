@@ -7,3 +7,21 @@ ATDPlayerController::ATDPlayerController(const FObjectInitializer& ObjectInitial
 	: Super(ObjectInitializer)
 {}
 
+void ATDPlayerController::DecrementHealth()
+{
+	if (bIsDead)
+	{
+		return;
+	}
+
+	--Health;
+	if (Health <= 0)
+	{
+		bIsDead = true;
+		OnGameLose();
+	}
+	else
+	{
+		OnLostHealth();
+	}
+}

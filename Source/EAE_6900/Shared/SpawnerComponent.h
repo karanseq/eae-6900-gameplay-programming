@@ -15,8 +15,8 @@
 class APathDataActor;
 
 // dynamic multicast delegates for the spawner component (Blueprintable)
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActorSpawnedSignature, AActor*, SpawnedActor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWaveEventSignature, int32, WaveIndex);
+DECLARE_MULTICAST_DELEGATE_OneParam(FActorSpawnedSignature, AActor*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FWaveEventSignature, int32);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class EAE_6900_API USpawnerComponent : public UActorComponent
@@ -60,19 +60,13 @@ public:
 	FORCEINLINE FWaveEventSignature& GetOnWaveStarted() { return OnWaveStarted; }
 	FORCEINLINE FWaveEventSignature& GetOnWaveEnded() { return OnWaveEnded; }
 
-protected:
-	UPROPERTY(BlueprintAssignable, Category = "Spawning")
-	FActorSpawnedSignature				OnActorSpawned;
-
-	UPROPERTY(BlueprintAssignable, Category = "Spawning")
-	FWaveEventSignature					OnWaveStarted;
-
-	UPROPERTY(BlueprintAssignable, Category = "Spawning")
-	FWaveEventSignature					OnWaveEnded;
-
 private:
 	TArray<TSubclassOf<ABasicEnemy>>	PendingActorsForCurrentWave;
 	float								Ticker;
+
+	FActorSpawnedSignature				OnActorSpawned;
+	FWaveEventSignature					OnWaveStarted;
+	FWaveEventSignature					OnWaveEnded;
 
 private:
 	void UpdateTicker(float DeltaTime);

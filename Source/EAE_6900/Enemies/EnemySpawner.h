@@ -43,7 +43,17 @@ protected:
 	UFUNCTION()
 	void OnEnemySpawned(AActor* SpawnedActor);
 
+	UFUNCTION()
+	void NotifyEnemyKilled(const FString& EnemyName, EStatKind Type);
+
+	void NotifyWaveStarted(int32 WaveIndex);
+	void NotifyWaveEnded(int32 WaveIndex);
+
 	virtual void BeginPlay() override;
+
+private:
+	int32									LastWaveThatEnded = 0;
+	int32									NumEnemiesAlive = 0;
 
 	//~==============================================================================
 	// Components

@@ -6,10 +6,12 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/CollisionProfile.h"
+#include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
 // game includes
 #include "Shared/PathDataActor.h"
+#include "Shared/TDPlayerController.h"
 
 // Sets default values
 ABasicEnemy::ABasicEnemy(const FObjectInitializer& ObjectInitializer)
@@ -84,6 +86,12 @@ void ABasicEnemy::Tick(float DeltaTime)
 
 		if (AccumulatedTime > PathDataActor->GetDuration())
 		{
+			ATDPlayerController* Player = Cast<ATDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+			if (Player)
+			{
+				Player->DecrementHealth();
+			}
+
 			PathDataActor = nullptr;
 			Destroy();
 		}
@@ -101,7 +109,7 @@ float ABasicEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Dam
 
 	if (CanBlockThisAttack())
 	{
-		OnEnemyBlockedDamage.ExecuteIfBound(GetName(), 0.0f, StatEffectCDO->Stat);
+		OnEnemyBlockedDamage.Broadcast(GetName(), 0.0f, StatEffectCDO->Stat);
 		return 0.0f;
 	}
 
@@ -128,7 +136,7 @@ float ABasicEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Dam
 	if (CurrentHealth <= 0.0f)
 	{
 		bIsDying = true;
-		OnEnemyKilled.ExecuteIfBound(GetName(), StatEffectCDO->Stat);
+		OnEnemyKilled.Broadcast(GetName(), StatEffectCDO->Stat);
 		Box->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	}
@@ -151,7 +159,7 @@ float ABasicEnemy::TakePhysicalDamage(UStatEffect const * const StatEffectCDO)
 	CurrentHealth -= DamageTaken;
 
 	OnHealthChanged();
-	OnEnemyTookDamage.ExecuteIfBound(GetName(), DamageTaken, StatEffectCDO->Stat);
+	OnEnemyTookDamage.Broadcast(GetName(), DamageTaken, StatEffectCDO->Stat);
 
 	return DamageTaken;
 }
@@ -171,7 +179,7 @@ float ABasicEnemy::TakeMagicalDamage(UStatEffect const * const StatEffectCDO)
 	CurrentHealth -= DamageTaken;
 
 	OnHealthChanged();
-	OnEnemyTookDamage.ExecuteIfBound(GetName(), DamageTaken, StatEffectCDO->Stat);
+	OnEnemyTookDamage.Broadcast(GetName(), DamageTaken, StatEffectCDO->Stat);
 
 	return DamageTaken;
 }
@@ -186,7 +194,7 @@ float ABasicEnemy::TakeSlowDamage(UStatEffect const * const StatEffectCDO)
 
 	const float AmountSlowed = FMath::RandRange(StatEffectCDO->Min, StatEffectCDO->Max);
 	MovementSpeed -= AmountSlowed;
-	OnEnemyTookDamage.ExecuteIfBound(GetName(), AmountSlowed, StatEffectCDO->Stat);
+	OnEnemyTookDamage.Broadcast(GetName(), AmountSlowed, StatEffectCDO->Stat);
 
 	FTimerDelegate TimerDelegate;
 	FTimerHandle TimerHandle;
