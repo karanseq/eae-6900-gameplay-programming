@@ -51,7 +51,7 @@ public:
 	// Behavior
 public:
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
-	void StartSpawning(bool bReset = true);
+	void StartSpawning(int32 WaveIndex = 0, bool bIgnoreWaveStartDelay = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
 	void StopSpawning();

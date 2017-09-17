@@ -45,7 +45,10 @@ protected:
 	ETowerAttackType							Type = ETowerAttackType::None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior", meta = (UIMin = "0.1"))
-	float										FireRate = 1.0f;
+	float										MinFireRate = 0.75f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior", meta = (UIMin = "0.1"))
+	float										MaxFireRate = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behavior")
 	TSubclassOf<UStatEffect>					StatEffectClass;
@@ -60,9 +63,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 private:
 	void OnAttackTimerElapsed();
 	void DoProjectileAttack();
 	void DoAOEAttack();
+
+private:
+	float										Ticker = 0.0f;
 
 };

@@ -28,21 +28,19 @@ void USpawnerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	}
 }
 
-void USpawnerComponent::StartSpawning(bool bReset/* = true*/)
+void USpawnerComponent::StartSpawning(int32 WaveIndex /* = 0*/, bool bIgnoreWaveStartDelay /* = false*/)
 {
 	if (CurrentState == ESpawnerState::Spawning ||
-		CurrentState == ESpawnerState::WaitOnCurrentWave)
+		CurrentState == ESpawnerState::WaitOnCurrentWave ||
+		CurrentWaveIndex < 0 || CurrentWaveIndex >= WaveData->WaveList.Num())
 	{
 		return;
 	}
 	CurrentState = ESpawnerState::WaitOnCurrentWave;
 
-	if (bReset)
-	{
-		CurrentWaveIndex = 0;
-	}
+	CurrentWaveIndex = WaveIndex;
 
-	Ticker = GetDelayBeforeStartingCurrentWave();
+	Ticker = bIgnoreWaveStartDelay ? 0.0f : GetDelayBeforeStartingCurrentWave();
 }
 
 void USpawnerComponent::StopSpawning()

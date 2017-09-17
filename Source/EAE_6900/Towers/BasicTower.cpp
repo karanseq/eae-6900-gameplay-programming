@@ -30,9 +30,18 @@ ABasicTower::ABasicTower(const FObjectInitializer& ObjectInitializer)
 void ABasicTower::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABasicTower::OnAttackTimerElapsed, FireRate, true);
+	Ticker = FMath::RandRange(MinFireRate, MaxFireRate);
+}
+
+void ABasicTower::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	Ticker -= DeltaTime;
+	if (Ticker < 0)
+	{
+		OnAttackTimerElapsed();
+	}
 }
 
 void ABasicTower::OnAttackTimerElapsed()
@@ -47,6 +56,8 @@ void ABasicTower::OnAttackTimerElapsed()
 		DoAOEAttack();
 		break;
 	}
+
+	Ticker = FMath::RandRange(MinFireRate, MaxFireRate);
 }
 
 void ABasicTower::DoProjectileAttack()
@@ -56,14 +67,22 @@ void ABasicTower::DoProjectileAttack()
 
 	if (OverlappingActors.Num())
 	{
-		FVector TargetLocation;
-		for (const auto& Target : OverlappingActors)
+		FVector TargetLocation = FVector::ZeroVector;
+		for (const auto& OverlappingActor : OverlappingActors)
 		{
-			if (Target->IsPendingKillPending() == false)
+			ABasicEnemy* Target = Cast<ABasicEnemy>(OverlappingActor);
+			if (Target != nullptr &&
+				Target->IsPendingKillPending() == false &&
+				Target->CanBeAttacked())
 			{
 				TargetLocation = Target->GetActorLocation();
 				break;
 			}
+		}
+
+		if (TargetLocation.IsNearlyZero())
+		{
+			return;
 		}
 
 		FVector SpawnLocation = GetActorLocation();
@@ -96,17 +115,18 @@ void ABasicTower::DoAOEAttack()
 
 	if (OverlappingActors.Num())
 	{
-		for (const auto& ActorToDamage : OverlappingActors)
+		for (const auto& OverlappingActor : OverlappingActors)
 		{
-			if (ActorToDamage->IsPendingKillPending())
+			ABasicEnemy* Target = Cast<ABasicEnemy>(OverlappingActor);
+			if (Target != nullptr &&
+				Target->IsPendingKillPending() == false &&
+				Target->CanBeAttacked())
 			{
-				continue;
+				FDamageEvent DamageEvent;
+				DamageEvent.DamageTypeClass = StatEffectClass;
+
+				Target->TakeDamage(1.0f, DamageEvent, GetInstigatorController(), this);
 			}
-
-			FDamageEvent DamageEvent;
-			DamageEvent.DamageTypeClass = StatEffectClass;
-
-			ActorToDamage->TakeDamage(1.0f, DamageEvent, GetInstigatorController(), this);
 		}
 	}
 }

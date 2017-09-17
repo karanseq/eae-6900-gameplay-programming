@@ -9,6 +9,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 
 // game includes
+#include "Enemies/BasicEnemy.h"
 #include "StatsBuffs/StatEffect.h"
 
 // Sets default values
@@ -26,7 +27,7 @@ ABasicProjectile::ABasicProjectile(const FObjectInitializer& ObjectInitializer)
 	RootComponent = Sphere;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
+	Mesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	Mesh->SetupAttachment(RootComponent);
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
@@ -43,13 +44,17 @@ void ABasicProjectile::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Othe
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
-	if (Other->IsPendingKillPending() == false)
+	ABasicEnemy* Target = Cast<ABasicEnemy>(Other);
+	if (Target != nullptr &&
+		Target->IsPendingKillPending() == false &&
+		Target->CanBeAttacked())
 	{
 		FDamageEvent DamageEvent;
 		DamageEvent.DamageTypeClass = StatEffectClass;
 
-		Other->TakeDamage(1.0f, DamageEvent, GetInstigatorController(), this);
-
-		Destroy();
+		Target->TakeDamage(1.0f, DamageEvent, GetInstigatorController(), this);
 	}
+
+	Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Destroy();
 }

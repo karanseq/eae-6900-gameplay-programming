@@ -26,7 +26,7 @@ AEnemySpawner::AEnemySpawner(const FObjectInitializer& ObjectInitializer)
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	SpawnerComponent->StartSpawning();
+	//SpawnerComponent->StartSpawning();
 }
 
 void AEnemySpawner::OnEnemySpawned(AActor* SpawnedActor)

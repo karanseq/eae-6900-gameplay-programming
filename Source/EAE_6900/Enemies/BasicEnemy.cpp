@@ -23,7 +23,7 @@ ABasicEnemy::ABasicEnemy(const FObjectInitializer& ObjectInitializer)
 	RootComponent = Box;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
+	Mesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	Mesh->SetupAttachment(RootComponent);
 }
 
@@ -31,20 +31,7 @@ ABasicEnemy::ABasicEnemy(const FObjectInitializer& ObjectInitializer)
 void ABasicEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindLambda([this]() {
-		CurrentHealth = FMath::Clamp(CurrentHealth + HealPerSecond, 0.0f, MaxHealth);
-	});
-
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, /*InbLoop = */true);
-}
-
-void ABasicEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	HealingTicker = 1.0f;
 }
 
 // Called every frame
@@ -74,6 +61,13 @@ void ABasicEnemy::Tick(float DeltaTime)
 		}
 
 		return;
+	}
+
+	HealingTicker -= DeltaTime;
+	if (HealingTicker < 0.0f)
+	{
+		HealingTicker = 1.0f;
+		CurrentHealth = FMath::Clamp(CurrentHealth + HealPerSecond, 0.0f, MaxHealth);
 	}
 
 	if (PathDataActor)
@@ -133,8 +127,10 @@ float ABasicEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Dam
 
 	if (CurrentHealth <= 0.0f)
 	{
-		OnEnemyKilled.ExecuteIfBound(GetName(), StatEffectCDO->Stat);
 		bIsDying = true;
+		OnEnemyKilled.ExecuteIfBound(GetName(), StatEffectCDO->Stat);
+		Box->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	}
 
 	return TotalDamage;

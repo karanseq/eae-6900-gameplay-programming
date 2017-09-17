@@ -87,11 +87,15 @@ public:
 	FORCEINLINE FEnemyDamageEvent& GetEnemyBlockedDamageEvent() { return OnEnemyBlockedDamage; }
 	FORCEINLINE bool CanBeAttacked() const { return bIsDying == false; }
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	bool										bIsDying = false;
+
 protected:
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	float TakePhysicalDamage(UStatEffect const * const StatEffectCDO);
 	float TakeMagicalDamage(UStatEffect const * const StatEffectCDO);
 	float TakeSlowDamage(UStatEffect const * const StatEffectCDO);
@@ -103,9 +107,9 @@ protected:
 	void OnHealthChanged();
 
 private:
-	bool										bIsDying = false;
 	bool										bHasDied = false;
 	float										DeathEffectTime = 0.25f;
+	float										HealingTicker = 0.0f;
 	FEnemyKilledEvent							OnEnemyKilled;
 	FEnemyDamageEvent							OnEnemyTookDamage;
 	FEnemyDamageEvent							OnEnemyBlockedDamage;
