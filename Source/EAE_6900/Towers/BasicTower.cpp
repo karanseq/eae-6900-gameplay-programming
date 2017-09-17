@@ -56,9 +56,18 @@ void ABasicTower::DoProjectileAttack()
 
 	if (OverlappingActors.Num())
 	{
+		FVector TargetLocation;
+		for (const auto& Target : OverlappingActors)
+		{
+			if (Target->IsPendingKillPending() == false)
+			{
+				TargetLocation = Target->GetActorLocation();
+				break;
+			}
+		}
+
 		FVector SpawnLocation = GetActorLocation();
 		SpawnLocation.Z += MuzzleLocation.Z;
-		FVector TargetLocation = OverlappingActors[0]->GetActorLocation();
 
 		FTransform ProjectileTransform;
 		ProjectileTransform.SetTranslation(SpawnLocation);
@@ -89,6 +98,11 @@ void ABasicTower::DoAOEAttack()
 	{
 		for (const auto& ActorToDamage : OverlappingActors)
 		{
+			if (ActorToDamage->IsPendingKillPending())
+			{
+				continue;
+			}
+
 			FDamageEvent DamageEvent;
 			DamageEvent.DamageTypeClass = StatEffectClass;
 

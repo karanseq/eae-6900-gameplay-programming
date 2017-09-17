@@ -43,10 +43,13 @@ void ABasicProjectile::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Othe
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
-	FDamageEvent DamageEvent;
-	DamageEvent.DamageTypeClass = StatEffectClass;
+	if (Other->IsPendingKillPending() == false)
+	{
+		FDamageEvent DamageEvent;
+		DamageEvent.DamageTypeClass = StatEffectClass;
 
-	Other->TakeDamage(1.0f, DamageEvent, GetInstigatorController(), this);
+		Other->TakeDamage(1.0f, DamageEvent, GetInstigatorController(), this);
 
-	Destroy();
+		Destroy();
+	}
 }

@@ -98,6 +98,11 @@ void ABasicEnemy::Tick(float DeltaTime)
 
 float ABasicEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bHasDied || bIsDying)
+	{
+		return 0.0f;
+	}
+
 	UStatEffect const * const StatEffectCDO = DamageEvent.DamageTypeClass ? DamageEvent.DamageTypeClass->GetDefaultObject<UStatEffect>() : GetDefault<UStatEffect>();
 
 	if (CanBlockThisAttack())
