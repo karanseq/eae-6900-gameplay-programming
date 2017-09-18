@@ -62,6 +62,7 @@ protected:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void NotifyOnGameOver();
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -71,6 +72,7 @@ private:
 	void DoAOEAttack();
 
 private:
+	bool										bIsGameOver = false;
 	float										Ticker = 0.0f;
 
 };

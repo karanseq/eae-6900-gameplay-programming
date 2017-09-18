@@ -5,9 +5,11 @@
 // engine includes
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // game includes
 #include "Enemies/BasicEnemy.h"
+#include "Shared/TDPlayerController.h"
 #include "Towers/BasicProjectile.h"
 
 // Sets default values
@@ -31,11 +33,27 @@ void ABasicTower::BeginPlay()
 {
 	Super::BeginPlay();
 	Ticker = FMath::RandRange(MinFireRate, MaxFireRate);
+
+	ATDPlayerController* Player = Cast<ATDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (Player)
+	{
+		Player->GetOnGameOver().AddUObject(this, &ABasicTower::NotifyOnGameOver);
+	}
+}
+
+void ABasicTower::NotifyOnGameOver()
+{
+	bIsGameOver = true;
 }
 
 void ABasicTower::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsGameOver)
+	{
+		return;
+	}
 
 	Ticker -= DeltaTime;
 	if (Ticker < 0)

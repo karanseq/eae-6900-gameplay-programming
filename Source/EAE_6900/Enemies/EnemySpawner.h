@@ -40,16 +40,14 @@ public:
 	void OnEnemyBlockedDamage(const FString& EnemyName, float DamageAmount, EStatKind Type);
 
 protected:
-	UFUNCTION()
-	void OnEnemySpawned(AActor* SpawnedActor);
-
-	UFUNCTION()
+	void NotifyEnemySpawned(AActor* SpawnedActor);
 	void NotifyEnemyKilled(const FString& EnemyName, EStatKind Type);
 
 	void NotifyWaveStarted(int32 WaveIndex);
 	void NotifyWaveEnded(int32 WaveIndex);
 
 	virtual void BeginPlay() override;
+	void NotifyOnGameOver();
 
 private:
 	int32									LastWaveThatEnded = 0;

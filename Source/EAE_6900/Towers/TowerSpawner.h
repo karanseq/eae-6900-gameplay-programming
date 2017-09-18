@@ -32,9 +32,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	TSubclassOf<ABasicTower> SlowingTowerBP;
 
-protected:
-	virtual void BeginPlay() override;
-	
+protected:	
 	void NotifyActorOnClicked(FKey ButtonPressed = EKeys::LeftMouseButton) override;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")

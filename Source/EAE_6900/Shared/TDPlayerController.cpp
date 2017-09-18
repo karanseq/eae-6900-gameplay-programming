@@ -7,6 +7,13 @@ ATDPlayerController::ATDPlayerController(const FObjectInitializer& ObjectInitial
 	: Super(ObjectInitializer)
 {}
 
+void ATDPlayerController::NotifyAllWavesCleared()
+{
+	bIsGameOver = true;
+	OnGameOver.Broadcast();
+	OnGameWin();
+}
+
 void ATDPlayerController::DecrementHealth()
 {
 	if (bIsDead)
@@ -18,6 +25,8 @@ void ATDPlayerController::DecrementHealth()
 	if (Health <= 0)
 	{
 		bIsDead = true;
+		bIsGameOver = true;
+		OnGameOver.Broadcast();
 		OnGameLose();
 	}
 	else

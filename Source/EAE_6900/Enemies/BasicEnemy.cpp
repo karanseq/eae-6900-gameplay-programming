@@ -34,6 +34,17 @@ void ABasicEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	HealingTicker = 1.0f;
+
+	ATDPlayerController* Player = Cast<ATDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (Player)
+	{
+		Player->GetOnGameOver().AddUObject(this, &ABasicEnemy::NotifyOnGameOver);
+	}
+}
+
+void ABasicEnemy::NotifyOnGameOver()
+{
+	bIsGameOver = true;
 }
 
 // Called every frame
@@ -62,6 +73,11 @@ void ABasicEnemy::Tick(float DeltaTime)
 			}
 		}
 
+		return;
+	}
+
+	if (bIsGameOver)
+	{
 		return;
 	}
 
@@ -100,7 +116,7 @@ void ABasicEnemy::Tick(float DeltaTime)
 
 float ABasicEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
-	if (bHasDied || bIsDying)
+	if (bHasDied || bIsDying || bIsGameOver)
 	{
 		return 0.0f;
 	}

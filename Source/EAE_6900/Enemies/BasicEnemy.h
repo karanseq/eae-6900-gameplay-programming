@@ -85,7 +85,7 @@ public:
 	FORCEINLINE FEnemyKilledEvent& GetEnemyKilledEvent() { return OnEnemyKilled; }
 	FORCEINLINE FEnemyDamageEvent& GetEnemyTookDamageEvent() { return OnEnemyTookDamage; }
 	FORCEINLINE FEnemyDamageEvent& GetEnemyBlockedDamageEvent() { return OnEnemyBlockedDamage; }
-	FORCEINLINE bool CanBeAttacked() const { return bIsDying == false; }
+	FORCEINLINE bool CanBeAttacked() const { return bIsDying == false && bIsGameOver == false; }
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -95,6 +95,7 @@ protected:
 
 protected:
 	virtual void BeginPlay() override;
+	void NotifyOnGameOver();
 
 	float TakePhysicalDamage(UStatEffect const * const StatEffectCDO);
 	float TakeMagicalDamage(UStatEffect const * const StatEffectCDO);
@@ -107,6 +108,7 @@ protected:
 	void OnHealthChanged();
 
 private:
+	bool										bIsGameOver = false;
 	bool										bHasDied = false;
 	float										DeathEffectTime = 0.25f;
 	float										HealingTicker = 0.0f;

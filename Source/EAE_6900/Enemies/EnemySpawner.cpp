@@ -19,7 +19,7 @@ AEnemySpawner::AEnemySpawner(const FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpawnerComponent = CreateDefaultSubobject<USpawnerComponent>(TEXT("SpawnerComponent"));
-	SpawnerComponent->GetOnActorSpawned().AddUObject(this, &AEnemySpawner::OnEnemySpawned);
+	SpawnerComponent->GetOnActorSpawned().AddUObject(this, &AEnemySpawner::NotifyEnemySpawned);
 	SpawnerComponent->GetOnWaveStarted().AddUObject(this, &AEnemySpawner::NotifyWaveStarted);
 	SpawnerComponent->GetOnWaveEnded().AddUObject(this, &AEnemySpawner::NotifyWaveEnded);
 }
@@ -27,9 +27,20 @@ AEnemySpawner::AEnemySpawner(const FObjectInitializer& ObjectInitializer)
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ATDPlayerController* Player = Cast<ATDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (Player)
+	{
+		Player->GetOnGameOver().AddUObject(this, &AEnemySpawner::NotifyOnGameOver);
+	}
 }
 
-void AEnemySpawner::OnEnemySpawned(AActor* SpawnedActor)
+void AEnemySpawner::NotifyOnGameOver()
+{
+	SpawnerComponent->StopSpawning();
+}
+
+void AEnemySpawner::NotifyEnemySpawned(AActor* SpawnedActor)
 {
 	ABasicEnemy* SpawnedEnemy = Cast<ABasicEnemy>(SpawnedActor);
 	SpawnedEnemy->GetEnemyKilledEvent().AddUObject(this, &AEnemySpawner::NotifyEnemyKilled);
@@ -50,7 +61,7 @@ void AEnemySpawner::NotifyEnemyKilled(const FString& EnemyName, EStatKind Type)
 		ATDPlayerController* Player = Cast<ATDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		if (Player)
 		{
-			Player->OnGameWin();
+			Player->NotifyAllWavesCleared();
 		}
 	}
 }

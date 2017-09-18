@@ -4,8 +4,10 @@
 
 // engine includes
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // game includes
+#include "Shared/TDPlayerController.h"
 #include "Towers/BasicTower.h"
 
 // Sets default values
@@ -23,15 +25,14 @@ ATowerSpawner::ATowerSpawner(const FObjectInitializer& ObjectInitializer)
 	Mesh->SetupAttachment(RootComponent);
 }
 
-// Called when the game starts or when spawned
-void ATowerSpawner::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
 void ATowerSpawner::NotifyActorOnClicked(FKey ButtonPressed /* = EKeys::LeftMouseButton*/)
 {
+	ATDPlayerController* Player = Cast<ATDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (Player && Player->GetIsGameOver())
+	{
+		return;
+	}
+
 	ShowTowerSelection();
 }
 
