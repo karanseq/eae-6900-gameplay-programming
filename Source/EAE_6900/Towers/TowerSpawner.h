@@ -50,4 +50,18 @@ protected:
 private:
 	void SpawnTower(const TSubclassOf<ABasicTower>& TowerClass);
 
+	//~==============================================================================
+	// Unit Test helpers
+#if	WITH_EDITOR
+public:
+	FORCEINLINE const TSubclassOf<ABasicTower>& GetPhysicalTowerBP() const { return PhysicalTowerBP; }
+	FORCEINLINE const TSubclassOf<ABasicTower>& GetMagicalTowerBP() const { return MagicalTowerBP; }
+	FORCEINLINE const TSubclassOf<ABasicTower>& GetSlowingTowerBP() const { return SlowingTowerBP; }
+
+	void UnitTest_SpawnTower(const TSubclassOf<ABasicTower>& TowerClass)
+	{
+		SpawnTower(TowerClass);
+	}
+#endif
+
 };

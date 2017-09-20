@@ -10,5 +10,6 @@ public class EAE_6900EditorTarget : TargetRules
 		Type = TargetType.Editor;
 
 		ExtraModuleNames.AddRange( new string[] { "EAE_6900" } );
+		ExtraModuleNames.AddRange( new string[] { "EAE_6900Editor" } );
 	}
 }
