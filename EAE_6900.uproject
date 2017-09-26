@@ -9,17 +9,15 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine"
-			]
-		},
-		{
-			"Name": "EAE_6900Editor",
-			"Type": "Editor",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
 				"Engine",
-				"UnrealEd"
+				"PhysXVehicles"
 			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "PhysXVehicles",
+			"Enabled": true
 		}
 	]
 }
