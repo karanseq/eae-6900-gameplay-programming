@@ -22,7 +22,7 @@ AEAE_6900Bullet::AEAE_6900Bullet()
     SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
     SphereCollision->InitSphereRadius(10.0f);
     SphereCollision->BodyInstance.SetCollisionProfileName("Projectile");
-    SphereCollision->OnComponentHit.AddDynamic(this, &AEAE_6900Bullet::EventOnComponentHit);
+    //SphereCollision->OnComponentHit.AddDynamic(this, &AEAE_6900Bullet::EventOnComponentHit);
 
     SetRootComponent(SphereCollision);
 
@@ -34,13 +34,13 @@ AEAE_6900Bullet::AEAE_6900Bullet()
     // setup projectile movement
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
     ProjectileMovement->UpdatedComponent = SphereCollision;
-    ProjectileMovement->InitialSpeed = 4500.0f;
-    ProjectileMovement->MaxSpeed = 5000.0f;
+    ProjectileMovement->InitialSpeed = 10000.0f;
+    ProjectileMovement->MaxSpeed = 10000.0f;
     ProjectileMovement->bShouldBounce = 0;
     ProjectileMovement->ProjectileGravityScale = 0.0f;
 
     // self-destruction
-    InitialLifeSpan = 0.5f;
+    InitialLifeSpan = 0.125f;
 }
 
 // Called when the game starts or when spawned
@@ -53,6 +53,30 @@ void AEAE_6900Bullet::BeginPlay()
 void AEAE_6900Bullet::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+}
+
+void AEAE_6900Bullet::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (Role < ROLE_Authority)
+	{
+		// spawn effect
+		if (ImpactFX)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactFX, GetTransform(), true);
+		}
+	}
+	else
+	{
+		// apply damage
+		if (Other && Other->IsA(AEAE_6900Pawn::StaticClass()))
+		{
+			FDamageEvent DamageEvent;
+			Other->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+		}
+
+		// die
+		Destroy();
+	}
 }
 
 void AEAE_6900Bullet::EventOnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

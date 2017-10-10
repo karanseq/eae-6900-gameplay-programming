@@ -9,6 +9,8 @@
 // game includes
 #include "EAE_6900Pawn.h"
 
+#define LOCTEXT_NAMESPACE "EAE_6900HUD"
+
 AEAE_6900Hud::AEAE_6900Hud()
 {
     static ConstructorHelpers::FObjectFinder<UFont> Font(TEXT("/Engine/EngineFonts/RobotoDistanceField"));
@@ -28,6 +30,11 @@ void AEAE_6900Hud::DrawHUD()
     {
         FVector2D ScaleVec(HUDXRatio * 1.4f, HUDYRatio * 1.4f);
 
+		// player
+		FCanvasTextItem NameTextItem(FVector2D(HUDXRatio * 100.0f, HUDYRatio * 515.0f), FText::FromString(Vehicle->GetName()), HUDFont, FLinearColor::White);
+		NameTextItem.Scale = ScaleVec;
+		Canvas->DrawItem(NameTextItem);
+
         // speed
         FCanvasTextItem SpeedTextItem(FVector2D(HUDXRatio * 100.0f, HUDYRatio * 550.0f), Vehicle->SpeedText, HUDFont, FLinearColor::White);
         SpeedTextItem.Scale = ScaleVec;
@@ -38,15 +45,16 @@ void AEAE_6900Hud::DrawHUD()
         RPMTextItem.Scale = ScaleVec;
         Canvas->DrawItem(RPMTextItem);
 
-        //// health
-        //FCanvasTextItem HealthTextItem(FVector2D(HUDXRatio * 100.0f, HUDYRatio * 620.0f), Vehicle->HealthText, HUDFont, FLinearColor::White);
-        //HealthTextItem.Scale = ScaleVec;
-        //Canvas->DrawItem(HealthTextItem);
+        // health
+        FCanvasTextItem HealthTextItem(FVector2D(HUDXRatio * 100.0f, HUDYRatio * 620.0f), Vehicle->HealthText, HUDFont, FLinearColor::White);
+        HealthTextItem.Scale = ScaleVec;
+        Canvas->DrawItem(HealthTextItem);
 
-        //// ammo
-        //FCanvasTextItem AmmoTextItem(FVector2D(HUDXRatio * 100.0f, HUDYRatio * 655.0f), Vehicle->AmmoText, HUDFont, FLinearColor::White);
-        //AmmoTextItem.Scale = ScaleVec;
-        //Canvas->DrawItem(AmmoTextItem);
+        // ammo
+        FCanvasTextItem AmmoTextItem(FVector2D(HUDXRatio * 100.0f, HUDYRatio * 655.0f), Vehicle->AmmoText, HUDFont, FLinearColor::White);
+        AmmoTextItem.Scale = ScaleVec;
+        Canvas->DrawItem(AmmoTextItem);
     }
 }
 
+#undef LOCTEXT_NAMESPACE

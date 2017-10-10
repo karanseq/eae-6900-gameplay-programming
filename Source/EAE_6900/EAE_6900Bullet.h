@@ -22,6 +22,8 @@ protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
+	virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
+
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
@@ -41,9 +43,5 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = Visuals)
     UParticleSystem* ImpactFX;
-
-public:
-    UFUNCTION()
-    void EventOnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 };

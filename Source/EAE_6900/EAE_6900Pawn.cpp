@@ -11,6 +11,8 @@
 #include "Engine/SkeletalMesh.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Sound/SoundCue.h"
 #include "UObject/ConstructorHelpers.h"
@@ -24,10 +26,16 @@
 #include "EAE_6900WheelFront.h"
 #include "EAE_6900WheelRear.h"
 
+//~==============================================================================
+// Static Member Initialization
+
 const FName AEAE_6900Pawn::EngineAudioRPM("RPM");
 
-AEAE_6900Pawn::AEAE_6900Pawn() : Health(MaxHealth),
-Ammo(MaxAmmo)
+//~==============================================================================
+// Initialization
+
+AEAE_6900Pawn::AEAE_6900Pawn(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
     bReplicates = 1;
     bAlwaysRelevant = 1;
@@ -57,7 +65,7 @@ Ammo(MaxAmmo)
     SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 34.0f));
     SpringArm->SetWorldRotation(FRotator(-75.0f, 0.0f, 0.0f));
     SpringArm->SetupAttachment(RootComponent);
-    SpringArm->TargetArmLength = 1200.0f;
+    SpringArm->TargetArmLength = 2000.0f;
     SpringArm->bEnableCameraLag = true;
     SpringArm->bEnableCameraRotationLag = false;
     SpringArm->bInheritPitch = false;
@@ -83,8 +91,6 @@ Ammo(MaxAmmo)
     // visuals
     UpdateHealthText();
     UpdateAmmoText();
-
-    OnActorHit.AddDynamic(this, &AEAE_6900Pawn::EventOnActorHit);
 }
 
 void AEAE_6900Pawn::SetupVehicleProperties()
@@ -155,44 +161,8 @@ void AEAE_6900Pawn::SetupVehicleProperties()
     Vehicle4W->InertiaTensorScale = FVector(1.0f, 1.333f, 1.2f);
 }
 
-void AEAE_6900Pawn::SetupPlayerInputComponent(UInputComponent* InputComponent)
-{
-    Super::SetupPlayerInputComponent(InputComponent);
-    check(InputComponent);
-
-    InputComponent->BindAxis("MoveForward", this, &AEAE_6900Pawn::MoveForward);
-    InputComponent->BindAxis("MoveRight", this, &AEAE_6900Pawn::MoveRight);
-    InputComponent->BindAction("Handbrake", IE_Pressed, this, &AEAE_6900Pawn::OnHandbrakePressed);
-    InputComponent->BindAction("Handbrake", IE_Released, this, &AEAE_6900Pawn::OnHandbrakeReleased);
-    InputComponent->BindAction("ResetVehicle", IE_Pressed, this, &AEAE_6900Pawn::OnResetPressed);
-    InputComponent->BindAction("Fire", IE_Pressed, this, &AEAE_6900Pawn::OnFirePressed);
-    InputComponent->BindAction("Fire", IE_Released, this, &AEAE_6900Pawn::OnFireReleased);
-}
-
-void AEAE_6900Pawn::Tick(float Delta)
-{
-    Super::Tick(Delta);
-
-    UpdatePhysicsMaterial();
-
-    UpdateHUDStrings();
-
-    float RPMToAudioScale = 2500.0f / GetVehicleMovement()->GetEngineMaxRotationSpeed();
-    EngineSound->SetFloatParameter(EngineAudioRPM, GetVehicleMovement()->GetEngineRotationSpeed() * RPMToAudioScale);
-
-    if (bIsFirePressed && bCanFire && Role == ROLE_Authority)
-    {
-        FireWeapon();
-    }
-}
-
-void AEAE_6900Pawn::BeginPlay()
-{
-    Super::BeginPlay();
-
-    //EngineSound->Play();
-    EngineSound->SetVolumeMultiplier(0.0f);
-}
+//~==============================================================================
+// Movement and Input
 
 void AEAE_6900Pawn::MoveForward(float Value)
 {
@@ -258,26 +228,6 @@ bool AEAE_6900Pawn::ServerResetVehicle_Validate()
     return true;
 }
 
-void AEAE_6900Pawn::EventOnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
-{
-    //UE_LOG(NSLog, Log, TEXT(__FUNCTION__));
-}
-
-void AEAE_6900Pawn::UpdateHUDStrings()
-{
-    // get speed from vehicle
-    float KPH = FMath::Abs(GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
-    int32 KPH_int = FMath::FloorToInt(KPH);
-
-    SpeedText = FText::FromString(FString::Printf(TEXT("%d km/h"), KPH_int));
-
-    // get RPM from vehicle
-    int RPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineRotationSpeed());
-    static int MaxRPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineMaxRotationSpeed());
-
-    RPMText = FText::FromString(FString::Printf(TEXT("RPM: %d/%d"), RPM, MaxRPM));
-}
-
 void AEAE_6900Pawn::UpdatePhysicsMaterial()
 {
     if (GetActorUpVector().Z < 0)
@@ -300,14 +250,35 @@ void AEAE_6900Pawn::OnRep_Health()
     UpdateHealthText();
 }
 
-void AEAE_6900Pawn::UpdateHealthText()
-{
-    HealthText = FText::FromString(FString::Printf(TEXT("Health: %d/%d"), FMath::FloorToInt(Health), FMath::FloorToInt(MaxHealth)));
-}
-
 void AEAE_6900Pawn::OnRep_Ammo()
 {
     UpdateAmmoText();
+}
+
+float AEAE_6900Pawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+    if (Role == ROLE_Authority)
+    {
+        // reduce health
+        Health -= DamageAmount;
+        Health = FMath::Clamp(Health, 0.0f, MaxHealth);
+
+        // slow down
+		GetVehicleMovementComponent()->SetHandbrakeInput(true);
+
+		if (Role == ROLE_Authority)
+		{
+			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.0f, FColor::Red,
+				FString::Printf(TEXT("%s took damage!"), *GetName()));
+		}
+    }
+
+    return DamageAmount;
+}
+
+void AEAE_6900Pawn::UpdateHealthText()
+{
+    HealthText = FText::FromString(FString::Printf(TEXT("Health: %d/%d"), FMath::FloorToInt(Health), FMath::FloorToInt(MaxHealth)));
 }
 
 void AEAE_6900Pawn::UpdateAmmoText()
@@ -315,14 +286,19 @@ void AEAE_6900Pawn::UpdateAmmoText()
     AmmoText = FText::FromString(FString::Printf(TEXT("Ammo: %d/%d"), Ammo, MaxAmmo));
 }
 
-void AEAE_6900Pawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AEAE_6900Pawn::UpdateHUDStrings()
 {
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    // get speed from vehicle
+    float KPH = FMath::Abs(GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
+    int32 KPH_int = FMath::FloorToInt(KPH);
 
-    DOREPLIFETIME(AEAE_6900Pawn, Health);
-    DOREPLIFETIME(AEAE_6900Pawn, Ammo);
-    DOREPLIFETIME(AEAE_6900Pawn, bIsFirePressed);
-    DOREPLIFETIME(AEAE_6900Pawn, bCanFire);
+    SpeedText = FText::FromString(FString::Printf(TEXT("%d km/h"), KPH_int));
+
+    // get RPM from vehicle
+    int RPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineRotationSpeed());
+    static int MaxRPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineMaxRotationSpeed());
+
+    RPMText = FText::FromString(FString::Printf(TEXT("RPM: %d/%d"), RPM, MaxRPM));
 }
 
 void AEAE_6900Pawn::RequestStartFiringWeapon()
@@ -389,7 +365,7 @@ void AEAE_6900Pawn::FireWeapon()
     }
 
     // reduce ammo
-    //--Ammo;
+    --Ammo;
 
     // initialize spawn parameters
     FActorSpawnParameters SpawnParameters;
@@ -416,20 +392,71 @@ void AEAE_6900Pawn::FireWeapon()
     });
 
     GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, FireRate, false);
+
+	if (Role == ROLE_Authority)
+	{
+		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.0f, FColor::Yellow,
+			FString::Printf(TEXT("%s fired!"), *GetName()));
+	}
 }
 
-float AEAE_6900Pawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+void AEAE_6900Pawn::Tick(float Delta)
 {
-    if (Role == ROLE_Authority)
+    Super::Tick(Delta);
+
+    UpdatePhysicsMaterial();
+
+    UpdateHUDStrings();
+
+    float RPMToAudioScale = 2500.0f / GetVehicleMovement()->GetEngineMaxRotationSpeed();
+    EngineSound->SetFloatParameter(EngineAudioRPM, GetVehicleMovement()->GetEngineRotationSpeed() * RPMToAudioScale);
+
+    if (bIsFirePressed && bCanFire && Role == ROLE_Authority)
     {
-        // reduce health
-        //Health -= DamageAmount;
-        Health = FMath::Clamp(Health, 0.0f, MaxHealth);
-
-        // slow down
-        GetVehicleMovementComponent()->SetHandbrakeInput(true);
+        FireWeapon();
     }
+}
 
-    return DamageAmount;
+void AEAE_6900Pawn::BeginPlay()
+{
+    Super::BeginPlay();
+
+    //EngineSound->Play();
+    EngineSound->SetVolumeMultiplier(0.0f);
+
+	PlayerID = UGameplayStatics::GetPlayerControllerID(Cast<APlayerController>(GetController()));
+
+	//if (Role == ROLE_Authority)
+	//{
+	//	UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("%s Role=ROLE_Authority"), *GetName()), true, false, FLinearColor::Green, 60.0f);
+	//}
+	//else
+	//{
+	//	UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("%s Role=%d"), *GetName(), static_cast<int32>(Role)), true, false, FLinearColor::Yellow, 60.0f);
+	//}
+}
+
+void AEAE_6900Pawn::SetupPlayerInputComponent(UInputComponent* InputComponent)
+{
+    Super::SetupPlayerInputComponent(InputComponent);
+    check(InputComponent);
+
+    InputComponent->BindAxis("MoveForward", this, &AEAE_6900Pawn::MoveForward);
+    InputComponent->BindAxis("MoveRight", this, &AEAE_6900Pawn::MoveRight);
+    InputComponent->BindAction("Handbrake", IE_Pressed, this, &AEAE_6900Pawn::OnHandbrakePressed);
+    InputComponent->BindAction("Handbrake", IE_Released, this, &AEAE_6900Pawn::OnHandbrakeReleased);
+    InputComponent->BindAction("ResetVehicle", IE_Pressed, this, &AEAE_6900Pawn::OnResetPressed);
+    InputComponent->BindAction("Fire", IE_Pressed, this, &AEAE_6900Pawn::OnFirePressed);
+    InputComponent->BindAction("Fire", IE_Released, this, &AEAE_6900Pawn::OnFireReleased);
+}
+
+void AEAE_6900Pawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AEAE_6900Pawn, Health);
+	DOREPLIFETIME(AEAE_6900Pawn, Ammo);
+	DOREPLIFETIME(AEAE_6900Pawn, bIsFirePressed);
+	DOREPLIFETIME(AEAE_6900Pawn, bCanFire);
 }
 

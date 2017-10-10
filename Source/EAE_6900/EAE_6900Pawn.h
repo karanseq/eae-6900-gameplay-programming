@@ -22,39 +22,16 @@ class USpringArmComponent;
 UCLASS(config = Game)
 class EAE_6900_API AEAE_6900Pawn : public AWheeledVehicle
 {
-    GENERATED_BODY()
-
-    UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    USpringArmComponent* SpringArm;
-
-    UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    UCameraComponent* Camera;
-
-    UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    UAudioComponent* EngineSound;
+	//~==============================================================================
+	// Initialization
+    GENERATED_UCLASS_BODY()
 
 public:
-    AEAE_6900Pawn();
-
     void SetupVehicleProperties();
 
-    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-    FText SpeedText;
-    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-    FText RPMText;
-
-    // begin Pawn interface
-    virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-    // end Pawn interface
-
-    // begin Actor interface
-    virtual void Tick(float Delta) override;
-protected:
-    virtual void BeginPlay() override;
-
+	//~==============================================================================
+	// Movement and Input
 public:
-    // end Actor interface
-
     void MoveForward(float Value);
     void MoveRight(float Value);
     void OnHandbrakePressed();
@@ -69,33 +46,29 @@ public:
 
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerResetVehicle();
-    void ServerResetVehicle_Implementation();
-    bool ServerResetVehicle_Validate();
-
-    UFUNCTION()
-    void EventOnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
-    void UpdateHUDStrings();
-
     void UpdatePhysicsMaterial();
-
+	
+private:
     bool bIsLowFriction;
     UPhysicalMaterial* SlipperyMaterial;
     UPhysicalMaterial* NonSlipperyMaterial;
 
+	//~==============================================================================
+	// Health and Ammo
 protected:
-    UPROPERTY(Category = Stats, EditAnywhere)
-    float MaxHealth = 100.0f;
+    UPROPERTY(Category = Stats, EditDefaultsOnly)
+    float MaxHealth = 10000.0f;
 
-    UPROPERTY(Category = Stats, VisibleAnywhere, Transient, ReplicatedUsing = OnRep_Health)
+    UPROPERTY(Category = Stats, VisibleAnywhere, ReplicatedUsing = OnRep_Health)
     float Health = MaxHealth;
 
     UFUNCTION()
     void OnRep_Health();
 
-    UPROPERTY(Category = Stats, EditAnywhere)
-    int32 MaxAmmo = 30;
+    UPROPERTY(Category = Stats, EditDefaultsOnly)
+    int32 MaxAmmo = 3000;
 
     UPROPERTY(Category = Stats, VisibleAnywhere, ReplicatedUsing = OnRep_Ammo)
     int32 Ammo = MaxAmmo;
@@ -111,43 +84,78 @@ protected:
     float FireRate = 0.2f;
 
 public:
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	//~==============================================================================
+	// HUD
+public:
     UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
     FText HealthText;
 
     UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
     FText AmmoText;
 
+    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
+    FText SpeedText;
+
+    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
+    FText RPMText;
+
 private:
     void UpdateHealthText();
-    void UpdateAmmoText();
+	void UpdateAmmoText();
+	void UpdateHUDStrings();
 
-public:
-    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	//~==============================================================================
+	// Weapons and Firing
 private:
-    void StartFiringWeapon();
     void RequestStartFiringWeapon();
+    void StartFiringWeapon();
 
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerStartFiringWeapon();
-    void ServerStartFiringWeapon_Implementation();
-    bool ServerStartFiringWeapon_Validate();
 
-    void StopFiringWeapon();
     void RequestStopFiringWeapon();
+    void StopFiringWeapon();
 
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerStopFiringWeapon();
-    void ServerStopFiringWeapon_Implementation();
-    bool ServerStopFiringWeapon_Validate();
 
     void FireWeapon();
 
+	//~==============================================================================
+	// Lifecycle
 public:
-    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	// begin Pawn interface
+	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
+	// end Pawn interface
 
+	// begin Actor interface
+	virtual void Tick(float Delta) override;
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	int32 PlayerID = -1;
+
+	//~==============================================================================
+	// Components
 public:
     FORCEINLINE USpringArmComponent* GetSpringArm() const { return SpringArm; }
     FORCEINLINE UCameraComponent* GetCamera() const { return Camera; }
     FORCEINLINE UAudioComponent* GetEngineSound() const { return EngineSound; }
+
+private:
+    UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    USpringArmComponent* SpringArm;
+
+    UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    UCameraComponent* Camera;
+
+    UPROPERTY(Category = Audio, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    UAudioComponent* EngineSound;
+
 };
