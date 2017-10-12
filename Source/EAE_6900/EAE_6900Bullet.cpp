@@ -22,7 +22,6 @@ AEAE_6900Bullet::AEAE_6900Bullet()
     SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
     SphereCollision->InitSphereRadius(10.0f);
     SphereCollision->BodyInstance.SetCollisionProfileName("Projectile");
-    //SphereCollision->OnComponentHit.AddDynamic(this, &AEAE_6900Bullet::EventOnComponentHit);
 
     SetRootComponent(SphereCollision);
 
@@ -78,28 +77,3 @@ void AEAE_6900Bullet::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other
 		Destroy();
 	}
 }
-
-void AEAE_6900Bullet::EventOnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-    if (Role < ROLE_Authority)
-    {
-        // spawn effect
-        if (ImpactFX)
-        {
-            UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactFX, GetTransform(), true);
-        }
-    }
-    else
-    {
-        // apply damage
-        if (OtherActor && OtherActor->IsA(AEAE_6900Pawn::StaticClass()))
-        {
-            FDamageEvent DamageEvent;
-            OtherActor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
-        }
-
-        // die
-        Destroy();
-    }
-}
-
