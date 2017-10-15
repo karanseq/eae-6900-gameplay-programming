@@ -79,8 +79,8 @@ protected:
 
     UPROPERTY(Category = State, VisibleAnywhere, BlueprintReadOnly, Replicated)
     bool bIsFirePressed = false;
-    UPROPERTY(Category = State, VisibleAnywhere, BlueprintReadOnly, Replicated)
-    bool bCanFire = true;
+	UPROPERTY(Category = State, VisibleAnywhere, BlueprintReadOnly, Replicated)
+	float FireTicker = -1.0f;
     UPROPERTY(Category = State, VisibleAnywhere, BlueprintReadOnly, Replicated)
     float FireRate = 0.2f;
 

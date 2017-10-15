@@ -315,6 +315,7 @@ void AEAE_6900Pawn::RequestStartFiringWeapon()
 void AEAE_6900Pawn::StartFiringWeapon()
 {
     bIsFirePressed = true;
+	FireTicker = FireRate;
 }
 
 void AEAE_6900Pawn::ServerStartFiringWeapon_Implementation()
@@ -342,6 +343,7 @@ void AEAE_6900Pawn::RequestStopFiringWeapon()
 void AEAE_6900Pawn::StopFiringWeapon()
 {
     bIsFirePressed = false;
+	FireTicker = -1.0f;
 }
 
 void AEAE_6900Pawn::ServerStopFiringWeapon_Implementation()
@@ -356,8 +358,6 @@ bool AEAE_6900Pawn::ServerStopFiringWeapon_Validate()
 
 void AEAE_6900Pawn::FireWeapon()
 {
-    bCanFire = false;
-
     if (Ammo <= 0)
     {
         return;
@@ -377,22 +377,28 @@ void AEAE_6900Pawn::FireWeapon()
     // spawn the bullet
     GetWorld()->SpawnActor<AEAE_6900Bullet>(DefaultBulletBP, BulletLocation, GetActorRotation(), SpawnParameters);
 
-    // set a timer based on the gun's rate of fire
-    FTimerHandle TimerHandle;
-    FTimerDelegate TimerDelegate;
-
-    TimerDelegate.BindLambda([&]()
-    {
-        bCanFire = true;
-    });
-
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, FireRate, false);
-
 	if (Role == ROLE_Authority)
 	{
 		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.0f, FColor::Yellow,
 			FString::Printf(TEXT("%s fired!"), *GetName()));
 	}
+}
+
+//~==============================================================================
+// Lifecycle
+
+void AEAE_6900Pawn::SetupPlayerInputComponent(UInputComponent* InputComponent)
+{
+	Super::SetupPlayerInputComponent(InputComponent);
+	check(InputComponent);
+
+	InputComponent->BindAxis("MoveForward", this, &AEAE_6900Pawn::MoveForward);
+	InputComponent->BindAxis("MoveRight", this, &AEAE_6900Pawn::MoveRight);
+	InputComponent->BindAction("Handbrake", IE_Pressed, this, &AEAE_6900Pawn::OnHandbrakePressed);
+	InputComponent->BindAction("Handbrake", IE_Released, this, &AEAE_6900Pawn::OnHandbrakeReleased);
+	InputComponent->BindAction("ResetVehicle", IE_Pressed, this, &AEAE_6900Pawn::OnResetPressed);
+	InputComponent->BindAction("Fire", IE_Pressed, this, &AEAE_6900Pawn::OnFirePressed);
+	InputComponent->BindAction("Fire", IE_Released, this, &AEAE_6900Pawn::OnFireReleased);
 }
 
 void AEAE_6900Pawn::Tick(float Delta)
@@ -406,10 +412,28 @@ void AEAE_6900Pawn::Tick(float Delta)
     float RPMToAudioScale = 2500.0f / GetVehicleMovement()->GetEngineMaxRotationSpeed();
     EngineSound->SetFloatParameter(EngineAudioRPM, GetVehicleMovement()->GetEngineRotationSpeed() * RPMToAudioScale);
 
-    if (bIsFirePressed && bCanFire && Role == ROLE_Authority)
+    if (FireTicker > 0.0f)
     {
-        FireWeapon();
+		FireTicker -= Delta;
+		if (FireTicker < 0.0f)
+		{
+			FireWeapon();
+			if (bIsFirePressed)
+			{
+				FireTicker = FireRate;
+			}
+		}
     }
+}
+
+void AEAE_6900Pawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AEAE_6900Pawn, Health);
+	DOREPLIFETIME(AEAE_6900Pawn, Ammo);
+	DOREPLIFETIME(AEAE_6900Pawn, bIsFirePressed);
+	DOREPLIFETIME(AEAE_6900Pawn, FireTicker);
 }
 
 void AEAE_6900Pawn::BeginPlay()
@@ -429,29 +453,5 @@ void AEAE_6900Pawn::BeginPlay()
 	//{
 	//	UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("%s Role=%d"), *GetName(), static_cast<int32>(Role)), true, false, FLinearColor::Yellow, 60.0f);
 	//}
-}
-
-void AEAE_6900Pawn::SetupPlayerInputComponent(UInputComponent* InputComponent)
-{
-    Super::SetupPlayerInputComponent(InputComponent);
-    check(InputComponent);
-
-    InputComponent->BindAxis("MoveForward", this, &AEAE_6900Pawn::MoveForward);
-    InputComponent->BindAxis("MoveRight", this, &AEAE_6900Pawn::MoveRight);
-    InputComponent->BindAction("Handbrake", IE_Pressed, this, &AEAE_6900Pawn::OnHandbrakePressed);
-    InputComponent->BindAction("Handbrake", IE_Released, this, &AEAE_6900Pawn::OnHandbrakeReleased);
-    InputComponent->BindAction("ResetVehicle", IE_Pressed, this, &AEAE_6900Pawn::OnResetPressed);
-    InputComponent->BindAction("Fire", IE_Pressed, this, &AEAE_6900Pawn::OnFirePressed);
-    InputComponent->BindAction("Fire", IE_Released, this, &AEAE_6900Pawn::OnFireReleased);
-}
-
-void AEAE_6900Pawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AEAE_6900Pawn, Health);
-	DOREPLIFETIME(AEAE_6900Pawn, Ammo);
-	DOREPLIFETIME(AEAE_6900Pawn, bIsFirePressed);
-	DOREPLIFETIME(AEAE_6900Pawn, bCanFire);
 }
 
