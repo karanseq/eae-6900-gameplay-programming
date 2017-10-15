@@ -21,7 +21,6 @@
 // game includes
 #include "EAE_6900.h"
 #include "EAE_6900Bullet.h"
-#include "EAE_6900GameInstance.h"
 #include "EAE_6900Hud.h"
 #include "EAE_6900WheelFront.h"
 #include "EAE_6900WheelRear.h"
@@ -372,15 +371,11 @@ void AEAE_6900Pawn::FireWeapon()
     SpawnParameters.Instigator = this;
     SpawnParameters.Owner = GetController();
 
-    // get a reference to the game instance
-    UEAE_6900GameInstance* GameInstance = Cast<UEAE_6900GameInstance>(GetGameInstance());
-    check(GameInstance);
-
     // calculate the bullet's initial position
     const FVector BulletLocation = GetActorLocation() + GetActorForwardVector() * 80.0f + GetActorUpVector() * 50.0f;
 
     // spawn the bullet
-    GetWorld()->SpawnActor<AEAE_6900Bullet>(GameInstance->DefaultBulletBP, BulletLocation, GetActorRotation(), SpawnParameters);
+    GetWorld()->SpawnActor<AEAE_6900Bullet>(DefaultBulletBP, BulletLocation, GetActorRotation(), SpawnParameters);
 
     // set a timer based on the gun's rate of fire
     FTimerHandle TimerHandle;

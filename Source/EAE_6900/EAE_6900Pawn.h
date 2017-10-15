@@ -9,6 +9,7 @@
 #include "EAE_6900Pawn.generated.h"
 
 // forward declarations
+class AEAE_6900Bullet;
 class UAudioComponent;
 class UBoxComponent;
 class UCameraComponent;
@@ -108,6 +109,10 @@ private:
 
 	//~==============================================================================
 	// Weapons and Firing
+public:
+    UPROPERTY(EditAnywhere, Category = AssetReferences)
+    TSubclassOf<AEAE_6900Bullet> DefaultBulletBP;
+
 private:
     void RequestStartFiringWeapon();
     void StartFiringWeapon();
