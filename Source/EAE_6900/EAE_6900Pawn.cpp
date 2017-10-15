@@ -21,7 +21,6 @@
 // game includes
 #include "EAE_6900.h"
 #include "EAE_6900Bullet.h"
-#include "EAE_6900Hud.h"
 #include "EAE_6900WheelFront.h"
 #include "EAE_6900WheelRear.h"
 
@@ -290,14 +289,10 @@ void AEAE_6900Pawn::UpdateHUDStrings()
     // get speed from vehicle
     float KPH = FMath::Abs(GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
     int32 KPH_int = FMath::FloorToInt(KPH);
-
-    SpeedText = FText::FromString(FString::Printf(TEXT("%d km/h"), KPH_int));
-
+	
     // get RPM from vehicle
     int RPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineRotationSpeed());
     static int MaxRPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineMaxRotationSpeed());
-
-    RPMText = FText::FromString(FString::Printf(TEXT("RPM: %d/%d"), RPM, MaxRPM));
 }
 
 void AEAE_6900Pawn::RequestStartFiringWeapon()

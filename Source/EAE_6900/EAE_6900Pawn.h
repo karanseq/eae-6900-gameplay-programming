@@ -59,19 +59,19 @@ private:
 	//~==============================================================================
 	// Health and Ammo
 protected:
-    UPROPERTY(Category = Stats, EditDefaultsOnly)
-    float MaxHealth = 10000.0f;
+    UPROPERTY(Category = Stats, EditDefaultsOnly, BlueprintReadOnly)
+    float MaxHealth = 250.0f;
 
-    UPROPERTY(Category = Stats, VisibleAnywhere, ReplicatedUsing = OnRep_Health)
+    UPROPERTY(Category = Stats, VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_Health)
     float Health = MaxHealth;
 
     UFUNCTION()
     void OnRep_Health();
 
-    UPROPERTY(Category = Stats, EditDefaultsOnly)
-    int32 MaxAmmo = 3000;
+    UPROPERTY(Category = Stats, EditDefaultsOnly, BlueprintReadOnly)
+    int32 MaxAmmo = 50;
 
-    UPROPERTY(Category = Stats, VisibleAnywhere, ReplicatedUsing = OnRep_Ammo)
+    UPROPERTY(Category = Stats, VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_Ammo)
     int32 Ammo = MaxAmmo;
 
     UFUNCTION()
@@ -95,12 +95,6 @@ public:
 
     UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
     FText AmmoText;
-
-    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-    FText SpeedText;
-
-    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-    FText RPMText;
 
 private:
     void UpdateHealthText();
