@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 
 // game includes
+#include "SaveGameData.h"
 
 #include "Destructible.generated.h"
 
@@ -14,7 +15,8 @@
 class UBoxComponent;
 
 UCLASS()
-class EAE_6900_API ADestructible : public AActor
+class EAE_6900_API ADestructible : public AActor,
+	public ISaveable
 {
 	GENERATED_UCLASS_BODY()
 
@@ -28,6 +30,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = Destructible)
+	void UpdateAppearance();
+
 protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = Destructible)
 	FName GUID = NAME_None;
@@ -37,6 +42,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Destructible)
 	int32 HitsToDestroy = 5;
+
+	//~==============================================================================
+	// Save Game
+public:
+	void SubmitDataToBeSaved(FLevelSaveData& LevelSaveData) const override;
 
 	//~==============================================================================
 	// Components

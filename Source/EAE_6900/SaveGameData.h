@@ -5,7 +5,6 @@
 
 // game includes
 #include "EAE_6900.h"
-#include "Collectible.h"
 
 #include "SaveGameData.generated.h"
 
@@ -19,6 +18,25 @@ struct FManifestData
 
 	UPROPERTY(VisibleAnywhere, Category = SaveGame)
 	int32											NumLevelSaveFiles = 0;
+
+};
+
+USTRUCT()
+struct FPlayerSaveData
+{
+	GENERATED_USTRUCT_BODY()
+
+	//~==============================================================================
+	// Properties
+
+	UPROPERTY(VisibleAnywhere, Category = SaveGame)
+	float											PlayerHealth = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = SaveGame)
+	int32											PlayerAmmo = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = SaveGame)
+	FTransform										PlayerTransform;
 
 };
 
@@ -60,13 +78,7 @@ struct FLevelSaveData
 	FName											LevelName = NAME_None;
 
 	UPROPERTY(VisibleAnywhere, Category = SaveGame)
-	float											PlayerHealth = 0.0f;
-
-	UPROPERTY(VisibleAnywhere, Category = SaveGame)
-	int32											PlayerAmmo = 0;
-
-	UPROPERTY(VisibleAnywhere, Category = SaveGame)
-	FTransform										PlayerTransform;
+	FPlayerSaveData									PlayerSaveData;
 
 	UPROPERTY(VisibleAnywhere, Category = SaveGame)
 	TMap<FName, FDestructibleSaveData>				Destructibles;
@@ -74,6 +86,14 @@ struct FLevelSaveData
 	UPROPERTY(VisibleAnywhere, Category = SaveGame)
 	TMap<FName, FCollectibleSaveData>				Collectibles;
 
+};
+
+class EAE_6900_API ISaveable
+{
+public:
+	virtual ~ISaveable() = default;
+
+	virtual void SubmitDataToBeSaved(FLevelSaveData& LevelSaveData) const = 0;
 };
 
 UCLASS()

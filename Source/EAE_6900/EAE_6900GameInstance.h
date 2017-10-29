@@ -46,7 +46,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game Loop")
 	void LoadLevel(int32 Index);
 	UFUNCTION(BlueprintCallable, Category = "Game Loop")
-	void SaveLevel() const;
+	void SaveLevel();
+
+	FORCEINLINE void RegisterSaveableObject(ISaveable* SaveableObject) { SaveableObjectList.AddUnique(SaveableObject); }
+	FORCEINLINE void GetCurrentlyLoadedPlayerData(const FPlayerSaveData*& LevelSaveData) const { LevelSaveData = bCurrentLevelDataExists ? &CurrentlyLoadedLevelData.PlayerSaveData : nullptr; }
+	FORCEINLINE void GetCurrentlyLoadedDestructibleData(const FDestructibleSaveData*& DestructibleSaveData, const FName& GUID) const { DestructibleSaveData = bCurrentLevelDataExists ? CurrentlyLoadedLevelData.Destructibles.Find(GUID) : nullptr; }
+	FORCEINLINE void GetCurrentlyLoadedCollectibleData(const FCollectibleSaveData*& CollectibleSaveData, const FName& GUID) const { CollectibleSaveData = bCurrentLevelDataExists ? CurrentlyLoadedLevelData.Collectibles.Find(GUID) : nullptr; }
 
 private:
 	void GetLevelSaveSlotName(FString& OutLevelSaveFileName, const int32 Index) const;
@@ -57,6 +62,9 @@ public:
 
 private:
 	FManifestData ManifestData;
+	TArray<ISaveable*> SaveableObjectList;
+
+	bool bCurrentLevelDataExists = false;
 	FLevelSaveData CurrentlyLoadedLevelData;
 
 private:

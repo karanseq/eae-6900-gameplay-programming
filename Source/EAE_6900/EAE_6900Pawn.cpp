@@ -22,6 +22,7 @@
 #include "Collectible.h"
 #include "EAE_6900.h"
 #include "EAE_6900Bullet.h"
+#include "EAE_6900GameInstance.h"
 #include "EAE_6900WheelFront.h"
 #include "EAE_6900WheelRear.h"
 
@@ -273,7 +274,7 @@ void AEAE_6900Pawn::NotifyActorBeginOverlap(AActor* OtherActor)
 		}
 
 		// destroy the collectible after collected
-		Collectible->Destroy();
+		Collectible->Collected();
 		Collectible = nullptr;
 	}
 }
@@ -397,6 +398,16 @@ void AEAE_6900Pawn::FireWeapon()
 }
 
 //~==============================================================================
+// Save Game
+
+void AEAE_6900Pawn::SubmitDataToBeSaved(FLevelSaveData& LevelSaveData) const
+{
+	LevelSaveData.PlayerSaveData.PlayerHealth = Health;
+	LevelSaveData.PlayerSaveData.PlayerAmmo = Ammo;
+	LevelSaveData.PlayerSaveData.PlayerTransform = GetActorTransform();
+}
+
+//~==============================================================================
 // Lifecycle
 
 void AEAE_6900Pawn::SetupPlayerInputComponent(UInputComponent* InputComponent)
@@ -448,20 +459,29 @@ void AEAE_6900Pawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 
 void AEAE_6900Pawn::BeginPlay()
 {
+	UEAE_6900GameInstance* GameInstance = UEAE_6900GameInstance::GetInstance();
+	GameInstance->RegisterSaveableObject(this);
+	
     Super::BeginPlay();
 
+	const FPlayerSaveData* SavedData = nullptr;
+	GameInstance->GetCurrentlyLoadedPlayerData(SavedData);
+	if (SavedData)
+	{
+		// update to saved stats
+		Health = SavedData->PlayerHealth;
+		Ammo = SavedData->PlayerAmmo;
+		
+		// teleport to saved location
+		{
+			const FTransform& SavedTransform = SavedData->PlayerTransform;
+			TeleportTo(SavedTransform.GetLocation(), SavedTransform.GetRotation().Rotator());
+		}
+	}
+
     //EngineSound->Play();
-    EngineSound->SetVolumeMultiplier(0.0f);
+    //EngineSound->SetVolumeMultiplier(0.0f);
 
 	PlayerID = UGameplayStatics::GetPlayerControllerID(Cast<APlayerController>(GetController()));
-
-	//if (Role == ROLE_Authority)
-	//{
-	//	UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("%s Role=ROLE_Authority"), *GetName()), true, false, FLinearColor::Green, 60.0f);
-	//}
-	//else
-	//{
-	//	UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("%s Role=%d"), *GetName(), static_cast<int32>(Role)), true, false, FLinearColor::Yellow, 60.0f);
-	//}
 }
 

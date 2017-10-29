@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 
 // game includes
+#include "SaveGameData.h"
 
 #include "Collectible.generated.h"
 
@@ -23,7 +24,8 @@ enum class ECollectibleType : uint8
 };
 
 UCLASS()
-class EAE_6900_API ACollectible : public AActor
+class EAE_6900_API ACollectible : public AActor,
+	public ISaveable
 {
 	GENERATED_UCLASS_BODY()
 
@@ -33,6 +35,8 @@ class EAE_6900_API ACollectible : public AActor
 public:
 	FORCEINLINE ECollectibleType GetType() const { return Type; }
 	FORCEINLINE float GetDelta() const { return Delta; }
+
+	void Collected(bool bWithAnimation = true);
 
 protected:
 	// Called when the game starts or when spawned
@@ -47,6 +51,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Collectible)
 	float Delta = 0.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = Collectible)
+	bool bCollected = false;
+
+	//~==============================================================================
+	// Save Game
+public:
+	void SubmitDataToBeSaved(FLevelSaveData& LevelSaveData) const override;
 
 	//~==============================================================================
 	// Components

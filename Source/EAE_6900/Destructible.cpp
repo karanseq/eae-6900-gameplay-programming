@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 
 // game includes
+#include "EAE_6900GameInstance.h"
 
 ADestructible::ADestructible(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -31,17 +32,41 @@ float ADestructible::TakeDamage(float DamageAmount, struct FDamageEvent const& D
 	UDamageType const* const DamageTypeCDO = DamageEvent.DamageTypeClass ? DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>() : GetDefault<UDamageType>();
 	ReceiveAnyDamage(DamageAmount, DamageTypeCDO, EventInstigator, DamageCauser);
 
-	if (HitsTaken >= HitsToDestroy)
-	{
-		Destroy();
-	}
+	UpdateAppearance();
+	SetActorHiddenInGame(HitsTaken >= HitsToDestroy);
 
 	return DamageAmount;
 }
 
 void ADestructible::BeginPlay()
 {
+	ensure(GUID != NAME_None);
+
+	UEAE_6900GameInstance* GameInstance = UEAE_6900GameInstance::GetInstance();
+	GameInstance->RegisterSaveableObject(this);
+
 	Super::BeginPlay();
-	
+
+	const FDestructibleSaveData* SavedData = nullptr;
+	GameInstance->GetCurrentlyLoadedDestructibleData(SavedData, GUID);
+	if (SavedData)
+	{
+		HitsTaken = SavedData->HitsTaken;
+		if (HitsTaken > 0)
+		{
+			UpdateAppearance();
+			SetActorHiddenInGame(HitsTaken >= HitsToDestroy);
+		}
+	}
+}
+
+//~==============================================================================
+// Save Game
+
+void ADestructible::SubmitDataToBeSaved(FLevelSaveData& LevelSaveData) const
+{
+	FDestructibleSaveData DataToSave;
+	DataToSave.HitsTaken = HitsTaken;
+	LevelSaveData.Destructibles.Add(GUID, DataToSave);
 }
 

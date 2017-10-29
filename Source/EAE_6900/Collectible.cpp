@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 
 // game includes
+#include "EAE_6900GameInstance.h"
 #include "EAE_6900Pawn.h"
 
 ACollectible::ACollectible(const FObjectInitializer& ObjectInitializer)
@@ -24,9 +25,40 @@ ACollectible::ACollectible(const FObjectInitializer& ObjectInitializer)
 //~==============================================================================
 // Behavior
 
+void ACollectible::Collected(bool bWithAnimation /* = true */)
+{
+	bCollected = true;
+	BoxComponent->SetCollisionProfileName(FName(TEXT("NoCollision")));
+	SetActorHiddenInGame(true);
+}
+
 void ACollectible::BeginPlay()
 {
+	ensure(GUID != NAME_None);
+
+	UEAE_6900GameInstance* GameInstance = UEAE_6900GameInstance::GetInstance();
+	GameInstance->RegisterSaveableObject(this);
+
 	Super::BeginPlay();
-	
+
+	const FCollectibleSaveData* SavedData = nullptr;
+	GameInstance->GetCurrentlyLoadedCollectibleData(SavedData, GUID);
+	if (SavedData)
+	{
+		if (SavedData->bWasCollected)
+		{
+			Collected(/*bWithAnimation =*/ false);
+		}
+	}
+}
+
+//~==============================================================================
+// Save Game
+
+void ACollectible::SubmitDataToBeSaved(FLevelSaveData& LevelSaveData) const
+{
+	FCollectibleSaveData DataToSave;
+	DataToSave.bWasCollected = bCollected;
+	LevelSaveData.Collectibles.Add(GUID, DataToSave);
 }
 

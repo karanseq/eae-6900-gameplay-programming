@@ -6,6 +6,9 @@
 #include "CoreMinimal.h"
 #include "WheeledVehicle.h"
 
+// game includes
+#include "SaveGameData.h"
+
 #include "EAE_6900Pawn.generated.h"
 
 // forward declarations
@@ -21,7 +24,8 @@ class USpringArmComponent;
  * 
  */
 UCLASS(config = Game)
-class EAE_6900_API AEAE_6900Pawn : public AWheeledVehicle
+class EAE_6900_API AEAE_6900Pawn : public AWheeledVehicle,
+	public ISaveable
 {
 	//~==============================================================================
 	// Initialization
@@ -112,6 +116,11 @@ private:
     void ServerStopFiringWeapon();
 
     void FireWeapon();
+
+	//~==============================================================================
+	// Save Game
+public:
+	void SubmitDataToBeSaved(FLevelSaveData& LevelSaveData) const override;
 
 	//~==============================================================================
 	// Lifecycle

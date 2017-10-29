@@ -22,6 +22,9 @@ void UEAE_6900GameInstance::Init()
 {
 	UE_LOG(LogGame, Log, TEXT("UEAE_6900GameInstance::Init!"));
 	UEAE_6900GameInstance::Instance = this;
+
+	LoadManifest();
+	LoadLevel(0);
 }
 
 void UEAE_6900GameInstance::Shutdown()
@@ -51,6 +54,7 @@ void UEAE_6900GameInstance::LoadManifest()
 	if (UEAE_6900ManifestSave* LoadManifestInstance = Cast<UEAE_6900ManifestSave>(UGameplayStatics::LoadGameFromSlot(ManifestSlotName, 0)))
 	{
 		ManifestData.NumLevelSaveFiles = LoadManifestInstance->ManifestData.NumLevelSaveFiles;
+		UE_LOG(LogGame, Log, TEXT("Manifest loaded successfully!"));
 	}
 	else
 	{
@@ -88,10 +92,11 @@ void UEAE_6900GameInstance::LoadLevel(int32 Index)
 
 	if (UEAE_6900LevelSave* LoadLevelSaveInstance = Cast<UEAE_6900LevelSave>(UGameplayStatics::LoadGameFromSlot(LevelSaveSlotName, 0)))
 	{
+		bCurrentLevelDataExists = true;
 		CurrentlyLoadedLevelData.LevelName = LoadLevelSaveInstance->LevelSaveData.LevelName;
-		CurrentlyLoadedLevelData.PlayerHealth = LoadLevelSaveInstance->LevelSaveData.PlayerHealth;
-		CurrentlyLoadedLevelData.PlayerAmmo = LoadLevelSaveInstance->LevelSaveData.PlayerAmmo;
-		CurrentlyLoadedLevelData.PlayerTransform = LoadLevelSaveInstance->LevelSaveData.PlayerTransform;
+		CurrentlyLoadedLevelData.PlayerSaveData.PlayerHealth = LoadLevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerHealth;
+		CurrentlyLoadedLevelData.PlayerSaveData.PlayerAmmo = LoadLevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerAmmo;
+		CurrentlyLoadedLevelData.PlayerSaveData.PlayerTransform = LoadLevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerTransform;
 
 		for (const auto& DestructibleSaveData : LoadLevelSaveInstance->LevelSaveData.Destructibles)
 		{
@@ -102,6 +107,8 @@ void UEAE_6900GameInstance::LoadLevel(int32 Index)
 		{
 			CurrentlyLoadedLevelData.Collectibles.Add(CollectibleSaveData.Key, CollectibleSaveData.Value);
 		}
+
+		UE_LOG(LogGame, Log, TEXT("Level for index:%d loaded successfully!"), Index);
 	}
 	else
 	{
@@ -109,23 +116,29 @@ void UEAE_6900GameInstance::LoadLevel(int32 Index)
 	}
 }
 
-void UEAE_6900GameInstance::SaveLevel() const
+void UEAE_6900GameInstance::SaveLevel()
 {
+	FLevelSaveData LevelDataToSave;
+	for (const auto& SaveableObject : SaveableObjectList)
+	{
+		SaveableObject->SubmitDataToBeSaved(LevelDataToSave);
+	}
+
 	if (UEAE_6900LevelSave* LevelSaveInstance = Cast<UEAE_6900LevelSave>(UGameplayStatics::CreateSaveGameObject(UEAE_6900LevelSave::StaticClass())))
 	{
 		// copy all properties into the save game object
 		{
-			LevelSaveInstance->LevelSaveData.LevelName = CurrentlyLoadedLevelData.LevelName;
-			LevelSaveInstance->LevelSaveData.PlayerHealth = CurrentlyLoadedLevelData.PlayerHealth;
-			LevelSaveInstance->LevelSaveData.PlayerAmmo = CurrentlyLoadedLevelData.PlayerAmmo;
-			LevelSaveInstance->LevelSaveData.PlayerTransform = CurrentlyLoadedLevelData.PlayerTransform;
+			LevelSaveInstance->LevelSaveData.LevelName = LevelDataToSave.LevelName;
+			LevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerHealth = LevelDataToSave.PlayerSaveData.PlayerHealth;
+			LevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerAmmo = LevelDataToSave.PlayerSaveData.PlayerAmmo;
+			LevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerTransform = LevelDataToSave.PlayerSaveData.PlayerTransform;
 
-			for (const auto& DestructibleSaveData : CurrentlyLoadedLevelData.Destructibles)
+			for (const auto& DestructibleSaveData : LevelDataToSave.Destructibles)
 			{
 				LevelSaveInstance->LevelSaveData.Destructibles.Add(DestructibleSaveData.Key, DestructibleSaveData.Value);
 			}
 
-			for (const auto& CollectibleSaveData : CurrentlyLoadedLevelData.Collectibles)
+			for (const auto& CollectibleSaveData : LevelDataToSave.Collectibles)
 			{
 				LevelSaveInstance->LevelSaveData.Collectibles.Add(CollectibleSaveData.Key, CollectibleSaveData.Value);
 			}
@@ -137,6 +150,10 @@ void UEAE_6900GameInstance::SaveLevel() const
 
 		UGameplayStatics::SaveGameToSlot(LevelSaveInstance, LevelSaveSlotName, 0);
 		UE_LOG(LogGame, Log, TEXT("Level saved successfully!"));
+
+		// must save the manifest after adding a new level
+		++ManifestData.NumLevelSaveFiles;
+		SaveManifest();
 	}
 	else
 	{
