@@ -19,6 +19,7 @@
 #include "WheeledVehicleMovementComponent4W.h"
 
 // game includes
+#include "Collectible.h"
 #include "EAE_6900.h"
 #include "EAE_6900Bullet.h"
 #include "EAE_6900WheelFront.h"
@@ -85,10 +86,6 @@ AEAE_6900Pawn::AEAE_6900Pawn(const FObjectInitializer& ObjectInitializer)
     EngineSound->SetupAttachment(GetMesh());
 
     bIsLowFriction = false;
-
-    // visuals
-    UpdateHealthText();
-    UpdateAmmoText();
 }
 
 void AEAE_6900Pawn::SetupVehicleProperties()
@@ -243,14 +240,55 @@ void AEAE_6900Pawn::UpdatePhysicsMaterial()
     }
 }
 
+//~==============================================================================
+// Collectibles
+
+void AEAE_6900Pawn::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	if (OtherActor == nullptr ||
+		OtherActor->IsPendingKillOrUnreachable())
+	{
+		return;
+	}
+
+	// handle overlap with collectibles
+	if (ACollectible* Collectible = Cast<ACollectible>(OtherActor))
+	{
+		// update stats based on collectible type
+		switch (Collectible->GetType())
+		{
+		case ECollectibleType::Ammo:
+			if (Role == ROLE_Authority)
+			{
+				Ammo += FMath::TruncToInt(Collectible->GetDelta());
+			}
+			break;
+
+		case ECollectibleType::Health:
+			if (Role == ROLE_Authority)
+			{
+				Health += Collectible->GetDelta();
+			}
+			break;
+		}
+
+		// destroy the collectible after collected
+		Collectible->Destroy();
+		Collectible = nullptr;
+	}
+}
+
+//~==============================================================================
+// Health and Ammo
+
 void AEAE_6900Pawn::OnRep_Health()
 {
-    UpdateHealthText();
+
 }
 
 void AEAE_6900Pawn::OnRep_Ammo()
 {
-    UpdateAmmoText();
+
 }
 
 float AEAE_6900Pawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
@@ -264,35 +302,14 @@ float AEAE_6900Pawn::TakeDamage(float DamageAmount, struct FDamageEvent const& D
         // slow down
 		GetVehicleMovementComponent()->SetHandbrakeInput(true);
 
-		if (Role == ROLE_Authority)
-		{
-			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.0f, FColor::Red,
-				FString::Printf(TEXT("%s took damage!"), *GetName()));
-		}
+		//if (Role == ROLE_Authority)
+		//{
+		//	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.0f, FColor::Red,
+		//		FString::Printf(TEXT("%s took damage!"), *GetName()));
+		//}
     }
 
     return DamageAmount;
-}
-
-void AEAE_6900Pawn::UpdateHealthText()
-{
-    HealthText = FText::FromString(FString::Printf(TEXT("Health: %d/%d"), FMath::FloorToInt(Health), FMath::FloorToInt(MaxHealth)));
-}
-
-void AEAE_6900Pawn::UpdateAmmoText()
-{
-    AmmoText = FText::FromString(FString::Printf(TEXT("Ammo: %d/%d"), Ammo, MaxAmmo));
-}
-
-void AEAE_6900Pawn::UpdateHUDStrings()
-{
-    // get speed from vehicle
-    float KPH = FMath::Abs(GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
-    int32 KPH_int = FMath::FloorToInt(KPH);
-	
-    // get RPM from vehicle
-    int RPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineRotationSpeed());
-    static int MaxRPM = FMath::FloorToInt(GetVehicleMovement()->GetEngineMaxRotationSpeed());
 }
 
 void AEAE_6900Pawn::RequestStartFiringWeapon()
@@ -372,11 +389,11 @@ void AEAE_6900Pawn::FireWeapon()
     // spawn the bullet
     GetWorld()->SpawnActor<AEAE_6900Bullet>(DefaultBulletBP, BulletLocation, GetActorRotation(), SpawnParameters);
 
-	if (Role == ROLE_Authority)
-	{
-		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.0f, FColor::Yellow,
-			FString::Printf(TEXT("%s fired!"), *GetName()));
-	}
+	//if (Role == ROLE_Authority)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.0f, FColor::Yellow,
+	//		FString::Printf(TEXT("%s fired!"), *GetName()));
+	//}
 }
 
 //~==============================================================================
@@ -401,8 +418,6 @@ void AEAE_6900Pawn::Tick(float Delta)
     Super::Tick(Delta);
 
     UpdatePhysicsMaterial();
-
-    UpdateHUDStrings();
 
     float RPMToAudioScale = 2500.0f / GetVehicleMovement()->GetEngineMaxRotationSpeed();
     EngineSound->SetFloatParameter(EngineAudioRPM, GetVehicleMovement()->GetEngineRotationSpeed() * RPMToAudioScale);

@@ -67,7 +67,8 @@ void AEAE_6900Bullet::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other
 	else
 	{
 		// apply damage
-		if (Other && Other->IsA(AEAE_6900Pawn::StaticClass()))
+		if (Other && 
+			Other->IsPendingKillOrUnreachable() == false)
 		{
 			FDamageEvent DamageEvent;
 			Other->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);

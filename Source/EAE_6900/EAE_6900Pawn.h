@@ -57,6 +57,11 @@ private:
     UPhysicalMaterial* NonSlipperyMaterial;
 
 	//~==============================================================================
+	// Collectibles
+public:
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	//~==============================================================================
 	// Health and Ammo
 protected:
     UPROPERTY(Category = Stats, EditDefaultsOnly, BlueprintReadOnly)
@@ -72,7 +77,7 @@ protected:
     int32 MaxAmmo = 50;
 
     UPROPERTY(Category = Stats, VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_Ammo)
-    int32 Ammo = MaxAmmo;
+    int32 Ammo = 10;
 
     UFUNCTION()
     void OnRep_Ammo();
@@ -86,20 +91,6 @@ protected:
 
 public:
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-
-	//~==============================================================================
-	// HUD
-public:
-    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-    FText HealthText;
-
-    UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-    FText AmmoText;
-
-private:
-    void UpdateHealthText();
-	void UpdateAmmoText();
-	void UpdateHUDStrings();
 
 	//~==============================================================================
 	// Weapons and Firing
