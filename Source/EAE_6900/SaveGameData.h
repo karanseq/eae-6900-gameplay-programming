@@ -8,7 +8,7 @@
 
 #include "SaveGameData.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FManifestData
 {
 	GENERATED_USTRUCT_BODY()
@@ -16,7 +16,7 @@ struct FManifestData
 	//~==============================================================================
 	// Properties
 
-	UPROPERTY(VisibleAnywhere, Category = SaveGame)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = SaveGame)
 	TArray<FDateTime>								LevelTimestampList;
 
 };

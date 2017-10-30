@@ -24,23 +24,12 @@ void UEAE_6900GameInstance::Init()
 	UEAE_6900GameInstance::Instance = this;
 
 	LoadManifest();
-	LoadLevel(0);
 }
 
 void UEAE_6900GameInstance::Shutdown()
 {
 	UEAE_6900GameInstance::Instance = nullptr;
 	UE_LOG(LogGame, Log, TEXT("UEAE_6900GameInstance::Shutdown!"));
-}
-
-bool UEAE_6900GameInstance::BeginPlay_Implementation()
-{
-	return true;
-}
-
-bool UEAE_6900GameInstance::EndPlay_Implementation(EEndPlayReason::Type EndPlayReasonIn)
-{
-	return true;
 }
 
 void UEAE_6900GameInstance::LoadManifest()

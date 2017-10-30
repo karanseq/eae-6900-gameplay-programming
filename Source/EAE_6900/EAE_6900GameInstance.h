@@ -25,27 +25,18 @@ public:
 
 private:
 	// A static instance of this class for easy access
-	static UEAE_6900GameInstance*					Instance;
-
-	//~==============================================================================
-	// Game Loop
-public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Game Loop")
-	bool BeginPlay();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Game Loop")
-	bool EndPlay(EEndPlayReason::Type EndPlayReasonIn);
+	static UEAE_6900GameInstance* Instance;
 
 	//~==============================================================================
 	// Save Game
 public:
-	UFUNCTION(BlueprintCallable, Category = "Game Loop")
+	UFUNCTION(BlueprintCallable, Category = "Save Game")
 	void LoadManifest();
-	UFUNCTION(BlueprintCallable, Category = "Game Loop")
+	UFUNCTION(BlueprintCallable, Category = "Save Game")
 	void SaveManifest() const;
-	UFUNCTION(BlueprintCallable, Category = "Game Loop")
+	UFUNCTION(BlueprintCallable, Category = "Save Game")
 	void LoadLevel(int32 Index);
-	UFUNCTION(BlueprintCallable, Category = "Game Loop")
+	UFUNCTION(BlueprintCallable, Category = "Save Game")
 	void SaveLevel();
 
 	FORCEINLINE void RegisterSaveableObject(ISaveable* SaveableObject) { SaveableObjectList.AddUnique(SaveableObject); }
@@ -60,10 +51,12 @@ public:
 	static const FString ManifestSlotName;
 	static const FString LevelSlotPrefix;
 
-private:
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Save Game")
 	FManifestData ManifestData;
-	TArray<ISaveable*> SaveableObjectList;
 
+private:
+	TArray<ISaveable*> SaveableObjectList;
 	bool bCurrentLevelDataExists = false;
 	FLevelSaveData CurrentlyLoadedLevelData;
 
