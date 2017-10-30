@@ -17,7 +17,7 @@ struct FManifestData
 	// Properties
 
 	UPROPERTY(VisibleAnywhere, Category = SaveGame)
-	int32											NumLevelSaveFiles = 0;
+	TArray<FDateTime>								LevelTimestampList;
 
 };
 

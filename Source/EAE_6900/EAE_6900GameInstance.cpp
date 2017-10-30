@@ -53,7 +53,7 @@ void UEAE_6900GameInstance::LoadManifest()
 
 	if (UEAE_6900ManifestSave* LoadManifestInstance = Cast<UEAE_6900ManifestSave>(UGameplayStatics::LoadGameFromSlot(ManifestSlotName, 0)))
 	{
-		ManifestData.NumLevelSaveFiles = LoadManifestInstance->ManifestData.NumLevelSaveFiles;
+		ManifestData.LevelTimestampList = LoadManifestInstance->ManifestData.LevelTimestampList;
 		UE_LOG(LogGame, Log, TEXT("Manifest loaded successfully!"));
 	}
 	else
@@ -66,7 +66,7 @@ void UEAE_6900GameInstance::SaveManifest() const
 {
 	if (UEAE_6900ManifestSave* ManifestSaveInstance = Cast<UEAE_6900ManifestSave>(UGameplayStatics::CreateSaveGameObject(UEAE_6900ManifestSave::StaticClass())))
 	{
-		ManifestSaveInstance->ManifestData.NumLevelSaveFiles = ManifestData.NumLevelSaveFiles;
+		ManifestSaveInstance->ManifestData.LevelTimestampList = ManifestData.LevelTimestampList;
 
 		UGameplayStatics::SaveGameToSlot(ManifestSaveInstance, ManifestSlotName, 0);
 		UE_LOG(LogGame, Log, TEXT("Manifest saved successfully!"));
@@ -79,7 +79,7 @@ void UEAE_6900GameInstance::SaveManifest() const
 
 void UEAE_6900GameInstance::LoadLevel(int32 Index)
 {
-	ensure(Index >= 0 && Index < ManifestData.NumLevelSaveFiles);
+	ensure(Index >= 0 && Index < ManifestData.LevelTimestampList.Num());
 
 	FString LevelSaveSlotName;
 	GetLevelSaveSlotName(LevelSaveSlotName, Index);
@@ -146,13 +146,13 @@ void UEAE_6900GameInstance::SaveLevel()
 
 		// get a new slot name for this save file
 		FString LevelSaveSlotName;
-		GetLevelSaveSlotName(LevelSaveSlotName, ManifestData.NumLevelSaveFiles);
+		GetLevelSaveSlotName(LevelSaveSlotName, ManifestData.LevelTimestampList.Num());
 
 		UGameplayStatics::SaveGameToSlot(LevelSaveInstance, LevelSaveSlotName, 0);
 		UE_LOG(LogGame, Log, TEXT("Level saved successfully!"));
 
 		// must save the manifest after adding a new level
-		++ManifestData.NumLevelSaveFiles;
+		ManifestData.LevelTimestampList.Add(FDateTime::Now());
 		SaveManifest();
 	}
 	else
