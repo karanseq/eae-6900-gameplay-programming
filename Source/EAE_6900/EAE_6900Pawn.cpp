@@ -71,6 +71,7 @@ AEAE_6900Pawn::AEAE_6900Pawn(const FObjectInitializer& ObjectInitializer)
     SpringArm->bInheritPitch = false;
     SpringArm->bInheritRoll = false;
     SpringArm->bInheritYaw = false;
+	SpringArm->bDoCollisionTest = false;
 
     // camera
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));

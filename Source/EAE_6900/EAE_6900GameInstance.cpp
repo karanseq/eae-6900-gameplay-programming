@@ -32,6 +32,23 @@ void UEAE_6900GameInstance::Shutdown()
 	UE_LOG(LogGame, Log, TEXT("UEAE_6900GameInstance::Shutdown!"));
 }
 
+bool UEAE_6900GameInstance::BeginPlay()
+{
+	return true;
+}
+
+bool UEAE_6900GameInstance::EndPlay(EEndPlayReason::Type EndPlayReasonIn)
+{
+	SaveableObjectList.Empty();
+
+	CurrentlyLoadedLevelData.LevelName = NAME_None;
+	CurrentlyLoadedLevelData.PlayerSaveData = FPlayerSaveData();
+	CurrentlyLoadedLevelData.Destructibles.Empty();
+	CurrentlyLoadedLevelData.Collectibles.Empty();
+
+	return true;
+}
+
 void UEAE_6900GameInstance::LoadManifest()
 {
 	if (UGameplayStatics::DoesSaveGameExist(ManifestSlotName, 0) == false)

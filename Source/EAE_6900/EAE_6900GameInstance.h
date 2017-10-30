@@ -28,6 +28,15 @@ private:
 	static UEAE_6900GameInstance* Instance;
 
 	//~==============================================================================
+	// Game Loop
+public:
+	UFUNCTION(BlueprintCallable, Category = "Game Loop")
+	bool BeginPlay();
+
+	UFUNCTION(BlueprintCallable, Category = "Game Loop")
+	bool EndPlay(EEndPlayReason::Type EndPlayReasonIn);
+
+	//~==============================================================================
 	// Save Game
 public:
 	UFUNCTION(BlueprintCallable, Category = "Save Game")
