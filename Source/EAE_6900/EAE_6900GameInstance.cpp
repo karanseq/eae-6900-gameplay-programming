@@ -4,6 +4,8 @@
 
 // engine includes
 #include "Kismet/GameplayStatics.h"
+#include "Json.h"
+#include "JsonUtilities.h"
 
 // game includes
 
@@ -34,7 +36,7 @@ void UEAE_6900GameInstance::Shutdown()
 
 bool UEAE_6900GameInstance::BeginPlay()
 {
-	MakeRequest();
+	SaveManifest();
 	return true;
 }
 
@@ -52,6 +54,9 @@ bool UEAE_6900GameInstance::EndPlay(EEndPlayReason::Type EndPlayReasonIn)
 
 void UEAE_6900GameInstance::LoadManifest()
 {
+#if ENABLE_REMOTE_STORAGE
+	Request_GetManifest();
+#else
 	if (UGameplayStatics::DoesSaveGameExist(ManifestSlotName, 0) == false)
 	{
 		SaveManifest();
@@ -67,10 +72,20 @@ void UEAE_6900GameInstance::LoadManifest()
 	{
 		UE_LOG(LogGame, Error, TEXT("Couldn't load manifest!"));
 	}
+#endif // ENABLE_REMOTE_STORAGE
 }
 
-void UEAE_6900GameInstance::SaveManifest() const
+void UEAE_6900GameInstance::SaveManifest()
 {
+#if ENABLE_REMOTE_STORAGE
+	{
+		// get the manifest data stringified to json
+		FString ManifestJsonString;
+		FJsonObjectConverter::UStructToJsonObjectString<FManifestData>(ManifestData, ManifestJsonString);
+		Request_PostManifest(ManifestJsonString);
+		//UE_LOG(LogGame, Log, TEXT("ManifestJsonString:\n%s"), *ManifestJsonString);
+	}
+#else
 	if (UEAE_6900ManifestSave* ManifestSaveInstance = Cast<UEAE_6900ManifestSave>(UGameplayStatics::CreateSaveGameObject(UEAE_6900ManifestSave::StaticClass())))
 	{
 		ManifestSaveInstance->ManifestData.LevelTimestampList = ManifestData.LevelTimestampList;
@@ -82,6 +97,8 @@ void UEAE_6900GameInstance::SaveManifest() const
 	{
 		UE_LOG(LogGame, Error, TEXT("Couldn't save manifest!"));
 	}
+#endif // ENABLE_REMOTE_STORAGE
+
 }
 
 void UEAE_6900GameInstance::LoadLevel(int32 Index)
@@ -131,6 +148,18 @@ void UEAE_6900GameInstance::SaveLevel()
 		SaveableObject->SubmitDataToBeSaved(LevelDataToSave);
 	}
 
+#if ENABLE_REMOTE_STORAGE
+	{
+		// get the level save data stringified to json
+		FString LevelSaveJsonString;
+		FJsonObjectConverter::UStructToJsonObjectString<FLevelSaveData>(LevelDataToSave, LevelSaveJsonString);
+		UE_LOG(LogGame, Log, TEXT("LevelSaveJsonString:\n%s"), *LevelSaveJsonString);
+
+		// must save the manifest after adding a new level
+		ManifestData.LevelTimestampList.Add(FDateTime::Now());
+		SaveManifest();
+	}
+#else
 	if (UEAE_6900LevelSave* LevelSaveInstance = Cast<UEAE_6900LevelSave>(UGameplayStatics::CreateSaveGameObject(UEAE_6900LevelSave::StaticClass())))
 	{
 		// copy all properties into the save game object
@@ -166,6 +195,8 @@ void UEAE_6900GameInstance::SaveLevel()
 	{
 		UE_LOG(LogGame, Error, TEXT("Couldn't save level!"));
 	}
+#endif // ENABLE_REMOTE_STORAGE
+
 }
 
 void UEAE_6900GameInstance::GetLevelSaveSlotName(FString& OutLevelSaveSlotName, const int32 Index) const
@@ -198,3 +229,64 @@ void UEAE_6900GameInstance::OnResponseReceived(FHttpRequestPtr Request, FHttpRes
 		UE_LOG(LogGame, Log, TEXT("Received name:%s from server!"), *Name);
 	}
 }
+
+void UEAE_6900GameInstance::Request_PostManifest(const FString& JsonString)
+{
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::Response_PostManifest);
+	Request->SetURL("http://eae-6900.getsandbox.com/manifest");
+	Request->SetVerb("POST");
+	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", "application/json");
+	Request->SetContentAsString(JsonString);
+	Request->ProcessRequest();
+}
+
+void UEAE_6900GameInstance::Response_PostManifest(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		UE_LOG(LogGame, Log, TEXT("POST manifest succeeded!"));
+	}
+	else
+	{
+		UE_LOG(LogGame, Error, TEXT("POST manifest failed!"));
+	}
+}
+
+void UEAE_6900GameInstance::Request_GetManifest()
+{
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::Response_GetManifest);
+	Request->SetURL("http://eae-6900.getsandbox.com/manifest");
+	Request->SetVerb("GET");
+	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", "application/json");
+	Request->ProcessRequest();
+}
+
+void UEAE_6900GameInstance::Response_GetManifest(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		FManifestData ManifestData;
+		FJsonObjectConverter::JsonObjectStringToUStruct<FManifestData>(Response->GetContentAsString(), &ManifestData, 0, 0);
+		UE_LOG(LogGame, Log, TEXT("GET manifest succeeded!"));
+	}
+	else
+	{
+		UE_LOG(LogGame, Error, TEXT("GET manifest failed!"));
+	}
+}
+
+void UEAE_6900GameInstance::Request_PostLevel(const FString& JsonString)
+{}
+
+void UEAE_6900GameInstance::Response_PostLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{}
+
+void UEAE_6900GameInstance::Request_GetLevel(const FString& JsonString)
+{}
+
+void UEAE_6900GameInstance::Response_GetLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{}

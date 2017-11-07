@@ -13,6 +13,8 @@
 
 #include "EAE_6900GameInstance.generated.h"
 
+#define ENABLE_REMOTE_STORAGE 1
+
 /**
  * 
  */
@@ -43,7 +45,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Save Game")
 	void LoadManifest();
 	UFUNCTION(BlueprintCallable, Category = "Save Game")
-	void SaveManifest() const;
+	void SaveManifest();
 	UFUNCTION(BlueprintCallable, Category = "Save Game")
 	void LoadLevel(int32 Index);
 	UFUNCTION(BlueprintCallable, Category = "Save Game")
@@ -77,6 +79,18 @@ private:
 
 	void MakeRequest();
 	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	void Request_PostManifest(const FString& JsonString);
+	void Response_PostManifest(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	void Request_GetManifest();
+	void Response_GetManifest(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	void Request_PostLevel(const FString& JsonString);
+	void Response_PostLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	void Request_GetLevel(const FString& JsonString);
+	void Response_GetLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	//~==============================================================================
 	// Core
