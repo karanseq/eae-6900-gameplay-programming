@@ -5,6 +5,7 @@
 // engine includes
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Runtime/Online/HTTP/Public/Http.h"
 
 // game includes
 #include "EAE_6900.h"
@@ -68,6 +69,17 @@ private:
 	TArray<ISaveable*> SaveableObjectList;
 	bool bCurrentLevelDataExists = false;
 	FLevelSaveData CurrentlyLoadedLevelData;
+
+	//~==============================================================================
+	// HTTP
+private:
+	FHttpModule* Http;
+
+	void MakeRequest();
+	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	//~==============================================================================
+	// Core
 
 private:
 	void Init() override;

@@ -15,7 +15,7 @@ const FString UEAE_6900GameInstance::LevelSlotPrefix(TEXT("EAE_6900_LVL_"));
 UEAE_6900GameInstance::UEAE_6900GameInstance(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-
+	Http = &FHttpModule::Get();
 }
 
 void UEAE_6900GameInstance::Init()
@@ -34,6 +34,7 @@ void UEAE_6900GameInstance::Shutdown()
 
 bool UEAE_6900GameInstance::BeginPlay()
 {
+	MakeRequest();
 	return true;
 }
 
@@ -170,4 +171,30 @@ void UEAE_6900GameInstance::SaveLevel()
 void UEAE_6900GameInstance::GetLevelSaveSlotName(FString& OutLevelSaveSlotName, const int32 Index) const
 {
 	OutLevelSaveSlotName = FString::Printf(TEXT("%s%02d"), *LevelSlotPrefix, Index);
+}
+
+//~==============================================================================
+// HTTP
+
+void UEAE_6900GameInstance::MakeRequest()
+{
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::OnResponseReceived);
+	Request->SetURL("http://eae-6900.getsandbox.com/hello");
+	Request->SetVerb("GET");
+	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", "application/json");
+	Request->ProcessRequest();
+}
+
+void UEAE_6900GameInstance::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+
+	if (FJsonSerializer::Deserialize(Reader, JsonObject))
+	{
+		FString Name = JsonObject->GetStringField("name");
+		UE_LOG(LogGame, Log, TEXT("Received name:%s from server!"), *Name);
+	}
 }
