@@ -213,7 +213,19 @@ void UEAE_6900GameInstance::DeleteLevel(int32 Index)
 	}
 #else
 	{
+		if (UGameplayStatics::DoesSaveGameExist(LevelSaveTime, 0) == false)
+		{
+			UE_LOG(LogGame, Error, TEXT("Couldn't find level save file for index:%d"), Index);
+		}
 
+		if (UGameplayStatics::DeleteGameInSlot(LevelSaveTime, 0))
+		{
+			UE_LOG(LogGame, Log, TEXT("Level for index:%d deleted succesfully!"), Index);
+		}
+		else
+		{
+			UE_LOG(LogGame, Error, TEXT("Couldn't delete level save file for index:%d"), Index);
+		}
 	}
 #endif // ENABLE_REMOTE_STORAGE
 
