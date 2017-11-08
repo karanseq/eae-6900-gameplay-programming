@@ -56,12 +56,8 @@ public:
 	FORCEINLINE void GetCurrentlyLoadedDestructibleData(const FDestructibleSaveData*& DestructibleSaveData, const FName& GUID) const { DestructibleSaveData = bCurrentLevelDataExists ? CurrentlyLoadedLevelData.Destructibles.Find(GUID) : nullptr; }
 	FORCEINLINE void GetCurrentlyLoadedCollectibleData(const FCollectibleSaveData*& CollectibleSaveData, const FName& GUID) const { CollectibleSaveData = bCurrentLevelDataExists ? CurrentlyLoadedLevelData.Collectibles.Find(GUID) : nullptr; }
 
-private:
-	void GetLevelSaveSlotName(FString& OutLevelSaveFileName, const int32 Index) const;
-
 public:
 	static const FString ManifestSlotName;
-	static const FString LevelSlotPrefix;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Save Game")
@@ -77,9 +73,6 @@ private:
 private:
 	FHttpModule* Http;
 
-	void MakeRequest();
-	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
 	void Request_PostManifest(const FString& JsonString);
 	void Response_PostManifest(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
@@ -89,7 +82,7 @@ private:
 	void Request_PostLevel(const FString& JsonString);
 	void Response_PostLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	void Request_GetLevel(const FString& JsonString);
+	void Request_GetLevel(const FString& LevelSaveTime);
 	void Response_GetLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	//~==============================================================================

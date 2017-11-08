@@ -12,7 +12,6 @@
 // static member initialization
 UEAE_6900GameInstance* UEAE_6900GameInstance::Instance = nullptr;
 const FString UEAE_6900GameInstance::ManifestSlotName(TEXT("EAE_6900_MAN"));
-const FString UEAE_6900GameInstance::LevelSlotPrefix(TEXT("EAE_6900_LVL_"));
 
 UEAE_6900GameInstance::UEAE_6900GameInstance(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -36,7 +35,6 @@ void UEAE_6900GameInstance::Shutdown()
 
 bool UEAE_6900GameInstance::BeginPlay()
 {
-	SaveManifest();
 	return true;
 }
 
@@ -55,7 +53,9 @@ bool UEAE_6900GameInstance::EndPlay(EEndPlayReason::Type EndPlayReasonIn)
 void UEAE_6900GameInstance::LoadManifest()
 {
 #if ENABLE_REMOTE_STORAGE
-	Request_GetManifest();
+	{
+		Request_GetManifest();
+	}
 #else
 	if (UGameplayStatics::DoesSaveGameExist(ManifestSlotName, 0) == false)
 	{
@@ -83,7 +83,6 @@ void UEAE_6900GameInstance::SaveManifest()
 		FString ManifestJsonString;
 		FJsonObjectConverter::UStructToJsonObjectString<FManifestData>(ManifestData, ManifestJsonString);
 		Request_PostManifest(ManifestJsonString);
-		//UE_LOG(LogGame, Log, TEXT("ManifestJsonString:\n%s"), *ManifestJsonString);
 	}
 #else
 	if (UEAE_6900ManifestSave* ManifestSaveInstance = Cast<UEAE_6900ManifestSave>(UGameplayStatics::CreateSaveGameObject(UEAE_6900ManifestSave::StaticClass())))
@@ -105,18 +104,23 @@ void UEAE_6900GameInstance::LoadLevel(int32 Index)
 {
 	ensure(Index >= 0 && Index < ManifestData.LevelTimestampList.Num());
 
-	FString LevelSaveSlotName;
-	GetLevelSaveSlotName(LevelSaveSlotName, Index);
+	FString LevelSaveTime(ManifestData.LevelTimestampList[Index].ToString());
 
-	if (UGameplayStatics::DoesSaveGameExist(LevelSaveSlotName, 0) == false)
+#if ENABLE_REMOTE_STORAGE
+	{
+		Request_GetLevel(LevelSaveTime);
+	}
+#else
+	if (UGameplayStatics::DoesSaveGameExist(LevelSaveTime, 0) == false)
 	{
 		UE_LOG(LogGame, Error, TEXT("Couldn't find level save file for index:%d"), Index);
 		return;
 	}
 
-	if (UEAE_6900LevelSave* LoadLevelSaveInstance = Cast<UEAE_6900LevelSave>(UGameplayStatics::LoadGameFromSlot(LevelSaveSlotName, 0)))
+	if (UEAE_6900LevelSave* LoadLevelSaveInstance = Cast<UEAE_6900LevelSave>(UGameplayStatics::LoadGameFromSlot(LevelSaveTime, 0)))
 	{
 		bCurrentLevelDataExists = true;
+		CurrentlyLoadedLevelData.LevelSaveTime = LoadLevelSaveInstance->LevelSaveData.LevelSaveTime;
 		CurrentlyLoadedLevelData.LevelName = LoadLevelSaveInstance->LevelSaveData.LevelName;
 		CurrentlyLoadedLevelData.PlayerSaveData.PlayerHealth = LoadLevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerHealth;
 		CurrentlyLoadedLevelData.PlayerSaveData.PlayerAmmo = LoadLevelSaveInstance->LevelSaveData.PlayerSaveData.PlayerAmmo;
@@ -138,11 +142,17 @@ void UEAE_6900GameInstance::LoadLevel(int32 Index)
 	{
 		UE_LOG(LogGame, Error, TEXT("Couldn't load level save file for index:%d"), Index);
 	}
+#endif // ENABLE_REMOTE_STORAGE
 }
 
 void UEAE_6900GameInstance::SaveLevel()
 {
+	const FDateTime Now(FDateTime::Now());
+
 	FLevelSaveData LevelDataToSave;
+	LevelDataToSave.LevelSaveTime = Now;
+
+	// get data from all "saveables"
 	for (const auto& SaveableObject : SaveableObjectList)
 	{
 		SaveableObject->SubmitDataToBeSaved(LevelDataToSave);
@@ -153,11 +163,7 @@ void UEAE_6900GameInstance::SaveLevel()
 		// get the level save data stringified to json
 		FString LevelSaveJsonString;
 		FJsonObjectConverter::UStructToJsonObjectString<FLevelSaveData>(LevelDataToSave, LevelSaveJsonString);
-		UE_LOG(LogGame, Log, TEXT("LevelSaveJsonString:\n%s"), *LevelSaveJsonString);
-
-		// must save the manifest after adding a new level
-		ManifestData.LevelTimestampList.Add(FDateTime::Now());
-		SaveManifest();
+		Request_PostLevel(LevelSaveJsonString);
 	}
 #else
 	if (UEAE_6900LevelSave* LevelSaveInstance = Cast<UEAE_6900LevelSave>(UGameplayStatics::CreateSaveGameObject(UEAE_6900LevelSave::StaticClass())))
@@ -181,15 +187,8 @@ void UEAE_6900GameInstance::SaveLevel()
 		}
 
 		// get a new slot name for this save file
-		FString LevelSaveSlotName;
-		GetLevelSaveSlotName(LevelSaveSlotName, ManifestData.LevelTimestampList.Num());
-
-		UGameplayStatics::SaveGameToSlot(LevelSaveInstance, LevelSaveSlotName, 0);
+		UGameplayStatics::SaveGameToSlot(LevelSaveInstance, Now.ToString(), 0);
 		UE_LOG(LogGame, Log, TEXT("Level saved successfully!"));
-
-		// must save the manifest after adding a new level
-		ManifestData.LevelTimestampList.Add(FDateTime::Now());
-		SaveManifest();
 	}
 	else
 	{
@@ -197,44 +196,21 @@ void UEAE_6900GameInstance::SaveLevel()
 	}
 #endif // ENABLE_REMOTE_STORAGE
 
-}
-
-void UEAE_6900GameInstance::GetLevelSaveSlotName(FString& OutLevelSaveSlotName, const int32 Index) const
-{
-	OutLevelSaveSlotName = FString::Printf(TEXT("%s%02d"), *LevelSlotPrefix, Index);
+	// must save the manifest after adding a new level
+	ManifestData.LevelTimestampList.Add(Now);
+	SaveManifest();
 }
 
 //~==============================================================================
 // HTTP
 
-void UEAE_6900GameInstance::MakeRequest()
-{
-	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::OnResponseReceived);
-	Request->SetURL("http://eae-6900.getsandbox.com/hello");
-	Request->SetVerb("GET");
-	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
-	Request->SetHeader("Content-Type", "application/json");
-	Request->ProcessRequest();
-}
-
-void UEAE_6900GameInstance::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-{
-	TSharedPtr<FJsonObject> JsonObject;
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-
-	if (FJsonSerializer::Deserialize(Reader, JsonObject))
-	{
-		FString Name = JsonObject->GetStringField("name");
-		UE_LOG(LogGame, Log, TEXT("Received name:%s from server!"), *Name);
-	}
-}
-
 void UEAE_6900GameInstance::Request_PostManifest(const FString& JsonString)
 {
+	static const FString PostManifestURL("http://eae-6900.getsandbox.com/manifest");
+
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::Response_PostManifest);
-	Request->SetURL("http://eae-6900.getsandbox.com/manifest");
+	Request->SetURL(PostManifestURL);
 	Request->SetVerb("POST");
 	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
 	Request->SetHeader("Content-Type", "application/json");
@@ -244,21 +220,24 @@ void UEAE_6900GameInstance::Request_PostManifest(const FString& JsonString)
 
 void UEAE_6900GameInstance::Response_PostManifest(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
-	if (bWasSuccessful)
+	if (bWasSuccessful &&
+		Response->GetResponseCode() == EHttpResponseCodes::Ok)
 	{
 		UE_LOG(LogGame, Log, TEXT("POST manifest succeeded!"));
 	}
 	else
 	{
-		UE_LOG(LogGame, Error, TEXT("POST manifest failed!"));
+		UE_LOG(LogGame, Warning, TEXT("POST manifest failed!"));
 	}
 }
 
 void UEAE_6900GameInstance::Request_GetManifest()
 {
+	static const FString GetManifestURL("http://eae-6900.getsandbox.com/manifest");
+
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::Response_GetManifest);
-	Request->SetURL("http://eae-6900.getsandbox.com/manifest");
+	Request->SetURL(GetManifestURL);
 	Request->SetVerb("GET");
 	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
 	Request->SetHeader("Content-Type", "application/json");
@@ -267,26 +246,77 @@ void UEAE_6900GameInstance::Request_GetManifest()
 
 void UEAE_6900GameInstance::Response_GetManifest(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
-	if (bWasSuccessful)
+	if (bWasSuccessful &&
+		Response->GetResponseCode() == EHttpResponseCodes::Ok)
 	{
-		FManifestData ManifestData;
-		FJsonObjectConverter::JsonObjectStringToUStruct<FManifestData>(Response->GetContentAsString(), &ManifestData, 0, 0);
+		FManifestData RemoteManifestData;
+		FJsonObjectConverter::JsonObjectStringToUStruct<FManifestData>(Response->GetContentAsString(), &RemoteManifestData, 0, 0);
+
+		ManifestData.LevelTimestampList = RemoteManifestData.LevelTimestampList;
 		UE_LOG(LogGame, Log, TEXT("GET manifest succeeded!"));
 	}
 	else
 	{
-		UE_LOG(LogGame, Error, TEXT("GET manifest failed!"));
+		SaveManifest();
+		UE_LOG(LogGame, Warning, TEXT("GET manifest failed!"));
 	}
 }
 
 void UEAE_6900GameInstance::Request_PostLevel(const FString& JsonString)
-{}
+{
+	static const FString PostLevelURL("http://eae-6900.getsandbox.com/level");
+
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::Response_PostLevel);
+	Request->SetURL(PostLevelURL);
+	Request->SetVerb("POST");
+	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", "application/json");
+	Request->SetContentAsString(JsonString);
+	Request->ProcessRequest();
+}
 
 void UEAE_6900GameInstance::Response_PostLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-{}
+{
+	if (bWasSuccessful &&
+		Response->GetResponseCode() == EHttpResponseCodes::Ok)
+	{
+		UE_LOG(LogGame, Log, TEXT("POST level succeeded!"));
+	}
+	else
+	{
+		UE_LOG(LogGame, Warning, TEXT("POST level failed!"));
+	}
+}
 
-void UEAE_6900GameInstance::Request_GetLevel(const FString& JsonString)
-{}
+void UEAE_6900GameInstance::Request_GetLevel(const FString& LevelSaveTime)
+{
+	static const FString GetLevelURL("http://eae-6900.getsandbox.com/level");
+
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::Response_GetLevel);
+	Request->SetURL(FString::Printf(TEXT("%s/%s"), *GetLevelURL, *LevelSaveTime));
+	Request->SetVerb("GET");
+	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", "application/json");
+	Request->ProcessRequest();
+}
 
 void UEAE_6900GameInstance::Response_GetLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-{}
+{
+	if (bWasSuccessful &&
+		Response->GetResponseCode() == EHttpResponseCodes::Ok)
+	{
+		FLevelSaveData RemoteLevelData;
+		FJsonObjectConverter::JsonObjectStringToUStruct<FLevelSaveData>(Response->GetContentAsString(), &RemoteLevelData, 0, 0);
+		
+		bCurrentLevelDataExists = true;
+		CurrentlyLoadedLevelData = RemoteLevelData;
+
+		UE_LOG(LogGame, Log, TEXT("GET level succeeded!"));
+	}
+	else
+	{
+		UE_LOG(LogGame, Warning, TEXT("GET level failed!"));
+	}
+}

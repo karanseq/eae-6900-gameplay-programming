@@ -75,6 +75,9 @@ struct FLevelSaveData
 	// Properties
 
 	UPROPERTY(VisibleAnywhere, Category = SaveGame)
+	FDateTime										LevelSaveTime;
+
+	UPROPERTY(VisibleAnywhere, Category = SaveGame)
 	FName											LevelName = NAME_None;
 
 	UPROPERTY(VisibleAnywhere, Category = SaveGame)
