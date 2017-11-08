@@ -13,7 +13,7 @@
 
 #include "EAE_6900GameInstance.generated.h"
 
-#define ENABLE_REMOTE_STORAGE 0
+#define ENABLE_REMOTE_STORAGE 1
 
 /**
  * 
