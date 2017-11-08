@@ -201,6 +201,27 @@ void UEAE_6900GameInstance::SaveLevel()
 	SaveManifest();
 }
 
+void UEAE_6900GameInstance::DeleteLevel(int32 Index)
+{
+	ensure(Index >= 0 && Index < ManifestData.LevelTimestampList.Num());
+
+	FString LevelSaveTime(ManifestData.LevelTimestampList[Index].ToString());
+
+#if ENABLE_REMOTE_STORAGE
+	{
+		Request_DeleteLevel(LevelSaveTime);
+	}
+#else
+	{
+
+	}
+#endif // ENABLE_REMOTE_STORAGE
+
+	// must save the manifest after deleting a level
+	ManifestData.LevelTimestampList.RemoveAt(Index);
+	SaveManifest();
+}
+
 //~==============================================================================
 // HTTP
 
@@ -318,5 +339,31 @@ void UEAE_6900GameInstance::Response_GetLevel(FHttpRequestPtr Request, FHttpResp
 	else
 	{
 		UE_LOG(LogGame, Warning, TEXT("GET level failed!"));
+	}
+}
+
+void UEAE_6900GameInstance::Request_DeleteLevel(const FString& LevelSaveTime)
+{
+	static const FString DeleteLevelURL("http://eae-6900.getsandbox.com/level");
+
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UEAE_6900GameInstance::Response_DeleteLevel);
+	Request->SetURL(FString::Printf(TEXT("%s/%s"), *DeleteLevelURL, *LevelSaveTime));
+	Request->SetVerb("DELETE");
+	Request->SetHeader("User-Agent", "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", "application/json");
+	Request->ProcessRequest();
+}
+
+void UEAE_6900GameInstance::Response_DeleteLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (bWasSuccessful &&
+		Response->GetResponseCode() == EHttpResponseCodes::Ok)
+	{
+		UE_LOG(LogGame, Log, TEXT("DELETE level succeeded!"));
+	}
+	else
+	{
+		UE_LOG(LogGame, Warning, TEXT("DELETE level failed!"));
 	}
 }

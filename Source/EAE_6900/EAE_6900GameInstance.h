@@ -50,6 +50,8 @@ public:
 	void LoadLevel(int32 Index);
 	UFUNCTION(BlueprintCallable, Category = "Save Game")
 	void SaveLevel();
+	UFUNCTION(BlueprintCallable, Category = "Save Game")
+	void DeleteLevel(int32 Index);
 
 	FORCEINLINE void RegisterSaveableObject(ISaveable* SaveableObject) { SaveableObjectList.AddUnique(SaveableObject); }
 	FORCEINLINE void GetCurrentlyLoadedPlayerData(const FPlayerSaveData*& LevelSaveData) const { LevelSaveData = bCurrentLevelDataExists ? &CurrentlyLoadedLevelData.PlayerSaveData : nullptr; }
@@ -84,6 +86,9 @@ private:
 
 	void Request_GetLevel(const FString& LevelSaveTime);
 	void Response_GetLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	void Request_DeleteLevel(const FString& LevelSaveTime);
+	void Response_DeleteLevel(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	//~==============================================================================
 	// Core
