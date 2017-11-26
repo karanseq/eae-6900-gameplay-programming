@@ -6,7 +6,7 @@
 
 // game includes
 #include "Player/EAE_6900PlayerController.h"
-#include "Player/EAE_6900Character.h"
+#include "Player/EAE_6900PlayerCharacter.h"
 
 AEAE_6900GameMode::AEAE_6900GameMode()
 {
@@ -14,7 +14,7 @@ AEAE_6900GameMode::AEAE_6900GameMode()
 	PlayerControllerClass = AEAE_6900PlayerController::StaticClass();
 
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/TopDownCPP/Blueprints/TopDownCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/TopDownCPP/Blueprints/Player/BP_PlayerCharacter"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
