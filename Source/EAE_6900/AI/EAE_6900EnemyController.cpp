@@ -16,8 +16,6 @@ AEAE_6900EnemyController::AEAE_6900EnemyController(const FObjectInitializer& Obj
 {
 	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>("BehaviorTreeComponent");
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>("BlackboardComponent");
-
-	CurrentWaypointKeyName = FName(TEXT("CurrentWaypoint"));
 }
 
 //~==============================================================================
@@ -39,4 +37,9 @@ void AEAE_6900EnemyController::Possess(APawn* InPawn)
 
 		BehaviorTreeComponent->StartTree(*MyPawn->GetBehaviorTree());
 	}
+}
+
+void AEAE_6900EnemyController::TargetSighted(APawn* InTarget)
+{
+	BlackboardComponent->SetValueAsObject(TargetKeyName, InTarget);
 }

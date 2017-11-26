@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -14,7 +15,8 @@
 
 // game includes
 
-AEAE_6900PlayerCharacter::AEAE_6900PlayerCharacter()
+AEAE_6900PlayerCharacter::AEAE_6900PlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -54,10 +56,24 @@ AEAE_6900PlayerCharacter::AEAE_6900PlayerCharacter()
 	CursorToWorld->DecalSize = FVector(16.0f, 32.0f, 32.0f);
 	CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());
 
+	// Create the noise emitter component
+	NoiseEmitter = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
+
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
+
+//~==============================================================================
+// Behavior
+
+void AEAE_6900PlayerCharacter::MakeFootstepNoise()
+{
+	MakeNoise(1.0f, this, GetActorLocation());
+}
+
+//~==============================================================================
+// Game Loop
 
 void AEAE_6900PlayerCharacter::Tick(float DeltaSeconds)
 {

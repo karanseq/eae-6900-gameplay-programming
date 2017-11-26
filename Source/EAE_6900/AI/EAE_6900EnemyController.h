@@ -24,18 +24,23 @@ class EAE_6900_API AEAE_6900EnemyController : public AAIController
 	// Behavior
 public:
 	virtual void Possess(APawn* InPawn) override;
-	
+	void TargetSighted(APawn* InTarget);
+
 	FORCEINLINE const TArray<AActor*>& GetWaypoints() const { return Waypoints; }
 	FORCEINLINE const FName& GetCurrentWaypointKeyName() const { return CurrentWaypointKeyName; }
 	
 	FORCEINLINE AActor* GetCurrentWaypoint() const { return BlackboardComponent ? Cast<AActor>(BlackboardComponent->GetValueAsObject(CurrentWaypointKeyName)) : nullptr; }
+	FORCEINLINE APawn* GetTarget() const { return BlackboardComponent ? Cast<APawn>(BlackboardComponent->GetValueAsObject(TargetKeyName)) : nullptr; }
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = AI)
 	TArray<AActor*> Waypoints;
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
-	FName CurrentWaypointKeyName;
+	FName CurrentWaypointKeyName = "CurrentWaypoint";
+
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName TargetKeyName = "Target";
 
 	//~==============================================================================
 	// Components

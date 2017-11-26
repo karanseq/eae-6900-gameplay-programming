@@ -12,6 +12,7 @@
 
 // forward declarations
 class UBehaviorTree;
+class UPawnSensingComponent;
 
 UCLASS()
 class EAE_6900_API AEAE_6900EnemyCharacter : public ACharacter
@@ -24,8 +25,18 @@ public:
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 
 protected:
+	UFUNCTION()
+	void OnSeePlayer(APawn* Pawn);
+
+	UFUNCTION()
+	void OnHearNoise(APawn* PawnInstigator, const FVector& Location, float Volume);
+
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	UBehaviorTree* BehaviorTree = nullptr;
+
+	UPROPERTY(VisibleAnywhere, Category = AI)
+	UPawnSensingComponent* PawnSensingComponent = nullptr;
 
 	//~==============================================================================
 	// Game Loop

@@ -10,23 +10,36 @@
 
 #include "EAE_6900PlayerCharacter.generated.h"
 
+// forward declarations
+class UPawnNoiseEmitterComponent;
+
 UCLASS(Blueprintable)
 class AEAE_6900PlayerCharacter : public ACharacter
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
 
+	//~==============================================================================
+	// Behavior
 public:
-	AEAE_6900PlayerCharacter();
+	UFUNCTION(BlueprintCallable, Category = AI)
+	void MakeFootstepNoise();
 
+	//~==============================================================================
+	// Game Loop
+public:
 	// Called every frame.
 	virtual void Tick(float DeltaSeconds) override;
 
+	//~==============================================================================
+	// Components
+public:
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns CursorToWorld subobject **/
 	FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }
+	FORCEINLINE class UPawnNoiseEmitterComponent* GetNoiseEmitter() const { return NoiseEmitter; }
 
 private:
 	/** Top down camera */
@@ -40,5 +53,8 @@ private:
 	/** A decal that projects to the cursor location. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent* CursorToWorld;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
+	class UPawnNoiseEmitterComponent* NoiseEmitter;
 };
 
