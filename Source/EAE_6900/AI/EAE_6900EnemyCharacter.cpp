@@ -29,7 +29,7 @@ void AEAE_6900EnemyCharacter::OnSeePlayer(APawn* Pawn)
 {
 	if (AEAE_6900EnemyController* EnemyController = Cast<AEAE_6900EnemyController>(GetController()))
 	{
-		//EnemyController->TargetSighted(Pawn);
+		EnemyController->TargetSighted(Pawn);
 	}
 }
 
