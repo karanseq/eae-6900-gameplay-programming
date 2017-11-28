@@ -6,7 +6,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 // game includes
-#include "AI/EAE_6900EnemyController.h"
+#include "AI/Shared/EAE_6900EnemyController.h"
 
 UBTTaskNode_ChooseWaypoint::UBTTaskNode_ChooseWaypoint(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

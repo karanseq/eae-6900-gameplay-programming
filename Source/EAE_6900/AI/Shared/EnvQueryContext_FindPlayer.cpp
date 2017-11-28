@@ -7,7 +7,7 @@
 #include "EnvironmentQuery/Items/EnvQueryItemType_Actor.h"
 
 // game includes
-#include "AI/EAE_6900EnemyController.h"
+#include "AI/Shared/EAE_6900EnemyController.h"
 
 UEnvQueryContext_FindPlayer::UEnvQueryContext_FindPlayer(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

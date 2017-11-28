@@ -8,6 +8,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 // game includes
+#include "EAE_6900AITypes.h"
 
 #include "EAE_6900EnemyController.generated.h"
 
@@ -27,10 +28,16 @@ public:
 	void TargetSighted(APawn* InTarget);
 
 	FORCEINLINE const TArray<AActor*>& GetWaypoints() const { return Waypoints; }
+
+	// BB Keys
 	FORCEINLINE const FName& GetCurrentWaypointKeyName() const { return CurrentWaypointKeyName; }
-	
+	FORCEINLINE const FName& GetTargetKeyName() const { return TargetKeyName; }
+	FORCEINLINE const FName& GetStateKeyName() const { return StateKeyName; }
+
+	// BB Values
 	FORCEINLINE AActor* GetCurrentWaypoint() const { return BlackboardComponent ? Cast<AActor>(BlackboardComponent->GetValueAsObject(CurrentWaypointKeyName)) : nullptr; }
 	FORCEINLINE APawn* GetTarget() const { return BlackboardComponent ? Cast<APawn>(BlackboardComponent->GetValueAsObject(TargetKeyName)) : nullptr; }
+	FORCEINLINE EAIState GetState() const { return BlackboardComponent ? static_cast<EAIState>(BlackboardComponent->GetValueAsEnum(StateKeyName)) : EAIState::Invalid; }
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = AI)
@@ -41,6 +48,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName TargetKeyName = "Target";
+
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName StateKeyName = "State";
 
 	//~==============================================================================
 	// Components

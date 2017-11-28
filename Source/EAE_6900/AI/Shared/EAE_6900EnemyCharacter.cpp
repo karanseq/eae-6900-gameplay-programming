@@ -6,7 +6,7 @@
 #include "Perception/PawnSensingComponent.h"
 
 // game includes
-#include "AI/EAE_6900EnemyController.h"
+#include "AI/Shared/EAE_6900EnemyController.h"
 
 // Sets default values
 AEAE_6900EnemyCharacter::AEAE_6900EnemyCharacter(const FObjectInitializer& ObjectInitializer)
