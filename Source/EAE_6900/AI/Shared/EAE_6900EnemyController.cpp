@@ -41,7 +41,7 @@ void AEAE_6900EnemyController::Possess(APawn* InPawn)
 	}
 }
 
-void AEAE_6900EnemyController::TargetSighted(APawn* InTarget)
+void AEAE_6900EnemyController::PlayerSighted(APawn* InTarget)
 {
 	if (BlackboardComponent)
 	{

@@ -10,7 +10,9 @@
 
 UBTTaskNode_ChooseWaypoint::UBTTaskNode_ChooseWaypoint(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-{}
+{
+	NodeName = "Choose Waypoint";
+}
 
 EBTNodeResult::Type UBTTaskNode_ChooseWaypoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

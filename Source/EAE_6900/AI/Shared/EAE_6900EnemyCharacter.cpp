@@ -29,7 +29,7 @@ void AEAE_6900EnemyCharacter::OnSeePlayer(APawn* Pawn)
 {
 	if (AEAE_6900EnemyController* EnemyController = Cast<AEAE_6900EnemyController>(GetController()))
 	{
-		EnemyController->TargetSighted(Pawn);
+		EnemyController->PlayerSighted(Pawn);
 	}
 }
 
@@ -40,7 +40,7 @@ void AEAE_6900EnemyCharacter::OnHearNoise(APawn* PawnInstigator, const FVector& 
 		if (PawnInstigator != this)
 		{
 			GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Orange, FString::Printf(TEXT("Heard sound with volume %f at %s"), Volume, *Location.ToString()));
-			EnemyController->TargetSighted(PawnInstigator);
+			EnemyController->PlayerSighted(PawnInstigator);
 		}
 	}
 }

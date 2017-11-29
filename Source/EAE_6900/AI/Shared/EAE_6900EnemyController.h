@@ -25,7 +25,7 @@ class EAE_6900_API AEAE_6900EnemyController : public AAIController
 	// Behavior
 public:
 	virtual void Possess(APawn* InPawn) override;
-	void TargetSighted(APawn* InTarget);
+	void PlayerSighted(APawn* InTarget);
 
 	FORCEINLINE const TArray<AActor*>& GetWaypoints() const { return Waypoints; }
 
@@ -43,14 +43,17 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = AI)
 	TArray<AActor*> Waypoints;
 
-	UPROPERTY(EditDefaultsOnly, Category = AI)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
 	FName CurrentWaypointKeyName = "CurrentWaypoint";
 
-	UPROPERTY(EditDefaultsOnly, Category = AI)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
 	FName PlayerKeyName = "Player";
 
-	UPROPERTY(EditDefaultsOnly, Category = AI)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
 	FName StateKeyName = "State";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
+	FName AttackCooldown = "AttackCooldown";
 
 	//~==============================================================================
 	// Components

@@ -10,7 +10,9 @@
 
 UBTTask_SetState::UBTTask_SetState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-{}
+{
+	NodeName = "Set State";
+}
 
 EBTNodeResult::Type UBTTask_SetState::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
