@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 
 // game includes
+#include "EAE_6900AITypes.h"
 #include "EAE_6900EnemyCharacter.h"
 
 AEAE_6900EnemyController::AEAE_6900EnemyController(const FObjectInitializer& ObjectInitializer)
@@ -35,11 +36,16 @@ void AEAE_6900EnemyController::Possess(APawn* InPawn)
 
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATargetPoint::StaticClass(), Waypoints);
 
+		BlackboardComponent->SetValueAsEnum(StateKeyName, static_cast<uint8>(EAIState::Patrol));
 		BehaviorTreeComponent->StartTree(*MyPawn->GetBehaviorTree());
 	}
 }
 
 void AEAE_6900EnemyController::TargetSighted(APawn* InTarget)
 {
-	BlackboardComponent->SetValueAsObject(TargetKeyName, InTarget);
+	if (BlackboardComponent)
+	{
+		BlackboardComponent->SetValueAsObject(PlayerKeyName, InTarget);
+		BlackboardComponent->SetValueAsEnum(StateKeyName, static_cast<uint8>(EAIState::TargetSighted));
+	}
 }

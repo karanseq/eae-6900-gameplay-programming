@@ -24,7 +24,7 @@ class EAE_6900_API UBTTask_SetState : public UBTTask_BlackboardBase
 	virtual void OnGameplayTaskActivated(UGameplayTask& Task) override {}
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI)
 	EAIState StateToSet = EAIState::Invalid;
 
 };

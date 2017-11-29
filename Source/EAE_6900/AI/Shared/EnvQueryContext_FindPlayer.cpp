@@ -21,9 +21,9 @@ void UEnvQueryContext_FindPlayer::ProvideContext(FEnvQueryInstance& QueryInstanc
 	{
 		if (AEAE_6900EnemyController* EnemyController = Cast<AEAE_6900EnemyController>(OwningActor->GetInstigatorController()))
 		{
-			if (EnemyController->GetTarget())
+			if (EnemyController->GetPlayer())
 			{
-				UEnvQueryItemType_Actor::SetContextHelper(ContextData, EnemyController->GetTarget());
+				UEnvQueryItemType_Actor::SetContextHelper(ContextData, EnemyController->GetPlayer());
 			}
 		}
 	}

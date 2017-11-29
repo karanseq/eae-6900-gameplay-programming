@@ -31,12 +31,12 @@ public:
 
 	// BB Keys
 	FORCEINLINE const FName& GetCurrentWaypointKeyName() const { return CurrentWaypointKeyName; }
-	FORCEINLINE const FName& GetTargetKeyName() const { return TargetKeyName; }
+	FORCEINLINE const FName& GetPlayerKeyName() const { return PlayerKeyName; }
 	FORCEINLINE const FName& GetStateKeyName() const { return StateKeyName; }
 
 	// BB Values
 	FORCEINLINE AActor* GetCurrentWaypoint() const { return BlackboardComponent ? Cast<AActor>(BlackboardComponent->GetValueAsObject(CurrentWaypointKeyName)) : nullptr; }
-	FORCEINLINE APawn* GetTarget() const { return BlackboardComponent ? Cast<APawn>(BlackboardComponent->GetValueAsObject(TargetKeyName)) : nullptr; }
+	FORCEINLINE APawn* GetPlayer() const { return BlackboardComponent ? Cast<APawn>(BlackboardComponent->GetValueAsObject(PlayerKeyName)) : nullptr; }
 	FORCEINLINE EAIState GetState() const { return BlackboardComponent ? static_cast<EAIState>(BlackboardComponent->GetValueAsEnum(StateKeyName)) : EAIState::Invalid; }
 
 protected:
@@ -47,7 +47,7 @@ protected:
 	FName CurrentWaypointKeyName = "CurrentWaypoint";
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
-	FName TargetKeyName = "Target";
+	FName PlayerKeyName = "Player";
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName StateKeyName = "State";

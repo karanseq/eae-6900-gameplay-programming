@@ -20,6 +20,6 @@ EBTNodeResult::Type UBTTask_ClearTarget::ExecuteTask(UBehaviorTreeComponent& Own
 		return EBTNodeResult::Failed;
 	}
 
-	EnemyController->GetBlackboardComponent()->SetValueAsObject(EnemyController->GetTargetKeyName(), nullptr);
+	EnemyController->GetBlackboardComponent()->SetValueAsObject(EnemyController->GetPlayerKeyName(), nullptr);
 	return EBTNodeResult::Succeeded;
 }
