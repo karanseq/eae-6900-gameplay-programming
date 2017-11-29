@@ -10,7 +10,9 @@
 
 UBTTask_ClearHidingSpot::UBTTask_ClearHidingSpot(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-{}
+{
+	NodeName = "Clear Hiding Spot";
+}
 
 EBTNodeResult::Type UBTTask_ClearHidingSpot::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

@@ -24,12 +24,14 @@ class EAE_6900_API AEAE_6900EnemyCharacter : public ACharacter
 public:
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 
-protected:
 	UFUNCTION()
 	void OnSeePlayer(APawn* Pawn);
 
 	UFUNCTION()
 	void OnHearNoise(APawn* PawnInstigator, const FVector& Location, float Volume);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = AI)
+	void Attack();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = AI)
