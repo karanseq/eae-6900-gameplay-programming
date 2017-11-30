@@ -24,6 +24,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = AI)
 	void MakeFootstepNoise();
 
+	UFUNCTION(BlueprintCallable, Category = AI)
+	void MakeAttackNoise();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Die();
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	FORCEINLINE bool IsDead() const { return Health <= 0.0f; }
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float Health = 300.0f;
+
 	//~==============================================================================
 	// Game Loop
 public:

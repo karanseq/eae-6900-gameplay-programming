@@ -72,6 +72,22 @@ void AEAE_6900PlayerCharacter::MakeFootstepNoise()
 	MakeNoise(1.0f, this, GetActorLocation());
 }
 
+void AEAE_6900PlayerCharacter::MakeAttackNoise()
+{
+	MakeNoise(1.0f, this, GetActorLocation());
+}
+
+float AEAE_6900PlayerCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	const float PreviousHealth = Health;
+	Health -= Health > Damage ? Damage : Damage - Health;
+	if (Health <= 0)
+	{
+		Die();
+	}
+	return PreviousHealth - Health;
+}
+
 //~==============================================================================
 // Game Loop
 

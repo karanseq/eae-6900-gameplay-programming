@@ -3,6 +3,7 @@
 #include "EAE_6900EnemyCharacter.h"
 
 // engine includes
+#include "BehaviorTree/BehaviorTree.h"
 #include "Perception/PawnSensingComponent.h"
 
 // game includes
@@ -45,10 +46,24 @@ void AEAE_6900EnemyCharacter::OnHearNoise(APawn* PawnInstigator, const FVector& 
 	}
 }
 
+float AEAE_6900EnemyCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	const float PreviousHealth = Health;
+	Health -= Health > Damage ? Damage : Damage - Health;
+	if (Health <= 0)
+	{
+		Die();
+		if (AEAE_6900EnemyController* EnemyController = Cast<AEAE_6900EnemyController>(GetController()))
+		{
+			EnemyController->GetBehaviorTreeComponent()->StopTree();
+		}
+	}
+	return PreviousHealth - Health;
+}
+
 //~==============================================================================
 // Game Loop
 
-// Called when the game starts or when spawned
 void AEAE_6900EnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -57,7 +72,6 @@ void AEAE_6900EnemyCharacter::BeginPlay()
 	PawnSensingComponent->OnHearNoise.AddDynamic(this, &AEAE_6900EnemyCharacter::OnHearNoise);
 }
 
-// Called every frame
 void AEAE_6900EnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

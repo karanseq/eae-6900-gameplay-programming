@@ -33,12 +33,20 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = AI)
 	void Attack();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = AI)
+	void Die();
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	UBehaviorTree* BehaviorTree = nullptr;
 
 	UPROPERTY(VisibleAnywhere, Category = AI)
 	UPawnSensingComponent* PawnSensingComponent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
+	float Health = 100.0f;
 
 	//~==============================================================================
 	// Game Loop

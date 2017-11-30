@@ -11,6 +11,7 @@
 // game includes
 #include "EAE_6900AITypes.h"
 #include "EAE_6900EnemyCharacter.h"
+#include "Player/EAE_6900PlayerCharacter.h"
 
 AEAE_6900EnemyController::AEAE_6900EnemyController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -43,6 +44,12 @@ void AEAE_6900EnemyController::Possess(APawn* InPawn)
 
 void AEAE_6900EnemyController::PlayerSighted(APawn* InTarget)
 {
+	AEAE_6900PlayerCharacter* PlayerCharacter = Cast<AEAE_6900PlayerCharacter>(InTarget);
+	if (PlayerCharacter && PlayerCharacter->IsDead())
+	{
+		return;
+	}
+
 	if (BlackboardComponent)
 	{
 		BlackboardComponent->SetValueAsObject(PlayerKeyName, InTarget);
