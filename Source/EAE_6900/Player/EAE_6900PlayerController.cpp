@@ -12,15 +12,26 @@
 AEAE_6900PlayerController::AEAE_6900PlayerController()
 {
 	bShowMouseCursor = true;
+	bPlayerDead = false;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+}
+
+void AEAE_6900PlayerController::Possess(APawn* aPawn)
+{
+	Super::Possess(aPawn);
+
+	PlayerCharacter = Cast<AEAE_6900PlayerCharacter>(aPawn);
 }
 
 void AEAE_6900PlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
+	// check if the pawn died
+	bPlayerDead |= PlayerCharacter ? PlayerCharacter->IsDead() : bPlayerDead;
+
 	// keep updating the destination every tick while desired
-	if (bMoveToMouseCursor)
+	if (!bPlayerDead && bMoveToMouseCursor)
 	{
 		MoveToMouseCursor();
 	}

@@ -6,6 +6,9 @@
 #include "GameFramework/PlayerController.h"
 #include "EAE_6900PlayerController.generated.h"
 
+// forward declarations
+class AEAE_6900PlayerCharacter;
+
 UCLASS()
 class AEAE_6900PlayerController : public APlayerController
 {
@@ -17,8 +20,12 @@ public:
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
+	uint32 bPlayerDead : 1;
+
+	AEAE_6900PlayerCharacter* PlayerCharacter = nullptr;
 
 	// Begin PlayerController interface
+	virtual void Possess(APawn* aPawn) override;
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 	// End PlayerController interface
