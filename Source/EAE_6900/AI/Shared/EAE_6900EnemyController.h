@@ -33,11 +33,15 @@ public:
 	FORCEINLINE const FName& GetCurrentWaypointKeyName() const { return CurrentWaypointKeyName; }
 	FORCEINLINE const FName& GetPlayerKeyName() const { return PlayerKeyName; }
 	FORCEINLINE const FName& GetStateKeyName() const { return StateKeyName; }
+	FORCEINLINE const FName& GetAttackCooldownKeyName() const { return AttackCooldownKeyName; }
+	FORCEINLINE const FName& GetExplosivePlantLocationKeyName() const { return ExplosivePlantLocationKeyName; }
 
 	// BB Values
 	FORCEINLINE AActor* GetCurrentWaypoint() const { return BlackboardComponent ? Cast<AActor>(BlackboardComponent->GetValueAsObject(CurrentWaypointKeyName)) : nullptr; }
 	FORCEINLINE APawn* GetPlayer() const { return BlackboardComponent ? Cast<APawn>(BlackboardComponent->GetValueAsObject(PlayerKeyName)) : nullptr; }
 	FORCEINLINE EAIState GetState() const { return BlackboardComponent ? static_cast<EAIState>(BlackboardComponent->GetValueAsEnum(StateKeyName)) : EAIState::Invalid; }
+	FORCEINLINE float GetAttackCooldown() const { return BlackboardComponent ? BlackboardComponent->GetValueAsFloat(AttackCooldownKeyName) : 0.0f; }
+	FORCEINLINE FVector GetExplosivePlantLocation() const { return BlackboardComponent ? BlackboardComponent->GetValueAsVector(ExplosivePlantLocationKeyName) : FVector::ZeroVector; }
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = AI)
@@ -53,7 +57,10 @@ protected:
 	FName StateKeyName = "State";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
-	FName AttackCooldown = "AttackCooldown";
+	FName AttackCooldownKeyName = "AttackCooldown";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
+	FName ExplosivePlantLocationKeyName = "ExplosivePlantLocation";
 
 	//~==============================================================================
 	// Components
