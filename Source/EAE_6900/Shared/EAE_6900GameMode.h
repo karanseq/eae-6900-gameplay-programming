@@ -6,12 +6,18 @@
 #include "GameFramework/GameModeBase.h"
 #include "EAE_6900GameMode.generated.h"
 
+// forward declarations
+class AExplosive;
+
 UCLASS(minimalapi)
 class AEAE_6900GameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AExplosive> ExplosiveBP;
+
 	AEAE_6900GameMode();
 };
 

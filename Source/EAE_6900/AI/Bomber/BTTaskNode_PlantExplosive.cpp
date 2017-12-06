@@ -22,7 +22,9 @@ EBTNodeResult::Type UBTTaskNode_PlantExplosive::ExecuteTask(UBehaviorTreeCompone
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-		GetWorld()->SpawnActor<AExplosive>(ExplosiveClass, SpawnTransform, SpawnParams);
+		AExplosive* Bomb = GetWorld()->SpawnActor<AExplosive>(ExplosiveClass, SpawnTransform, SpawnParams);
+		Bomb->SetTargetType(EExplosiveTargetType::Player);
+		EnemyController->OnBombPlanted(Bomb);
 
 		return EBTNodeResult::Succeeded;
 	}

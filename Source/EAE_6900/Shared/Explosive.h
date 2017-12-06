@@ -31,6 +31,7 @@ class EAE_6900_API AExplosive : public AActor
 	// Behavior
 
 public:
+	FORCEINLINE void SetTargetType(EExplosiveTargetType TargetTypeIn) { TargetType = TargetTypeIn; }
 	FORCEINLINE EExplosiveTargetType GetTargetType() const { return TargetType; }
 	FORCEINLINE float GetBaseDamage() const { return BaseDamage; }
 	FORCEINLINE float GetMinDamage() const { return MinDamage; }

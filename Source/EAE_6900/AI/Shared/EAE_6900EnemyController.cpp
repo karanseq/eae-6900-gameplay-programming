@@ -12,6 +12,10 @@
 #include "EAE_6900AITypes.h"
 #include "EAE_6900EnemyCharacter.h"
 #include "Player/EAE_6900PlayerCharacter.h"
+#include "Shared/Explosive.h"
+
+// static member initializations
+TArray<AActor*> AEAE_6900EnemyController::GBombsPlanted;
 
 AEAE_6900EnemyController::AEAE_6900EnemyController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -55,4 +59,18 @@ void AEAE_6900EnemyController::PlayerSighted(APawn* InTarget)
 		BlackboardComponent->SetValueAsObject(PlayerKeyName, InTarget);
 		BlackboardComponent->SetValueAsEnum(StateKeyName, static_cast<uint8>(EAIState::TargetSighted));
 	}
+}
+
+void AEAE_6900EnemyController::OnBombPlanted(AExplosive* Bomb)
+{
+	if (Bomb)
+	{
+		Bomb->OnDestroyed.AddDynamic(this, &AEAE_6900EnemyController::OnBombExploded);
+		AEAE_6900EnemyController::GBombsPlanted.AddUnique(Bomb);
+	}
+}
+
+void AEAE_6900EnemyController::OnBombExploded(AActor* Bomb)
+{
+	AEAE_6900EnemyController::GBombsPlanted.Remove(Bomb);
 }

@@ -13,6 +13,7 @@
 #include "EAE_6900EnemyController.generated.h"
 
 // forward declarations
+class AExplosive;
 class UBlackboardComponent;
 class UBehaviorTreeComponent;
 
@@ -26,8 +27,10 @@ class EAE_6900_API AEAE_6900EnemyController : public AAIController
 public:
 	virtual void Possess(APawn* InPawn) override;
 	void PlayerSighted(APawn* InTarget);
+	void OnBombPlanted(AExplosive* Bomb);
 
 	FORCEINLINE const TArray<AActor*>& GetWaypoints() const { return Waypoints; }
+	FORCEINLINE const TArray<AActor*>& GetBombsPlanted() const { return GBombsPlanted; }
 
 	// BB Keys
 	FORCEINLINE const FName& GetCurrentWaypointKeyName() const { return CurrentWaypointKeyName; }
@@ -42,6 +45,10 @@ public:
 	FORCEINLINE EAIState GetState() const { return BlackboardComponent ? static_cast<EAIState>(BlackboardComponent->GetValueAsEnum(StateKeyName)) : EAIState::Invalid; }
 	FORCEINLINE float GetAttackCooldown() const { return BlackboardComponent ? BlackboardComponent->GetValueAsFloat(AttackCooldownKeyName) : 0.0f; }
 	FORCEINLINE FVector GetExplosivePlantLocation() const { return BlackboardComponent ? BlackboardComponent->GetValueAsVector(ExplosivePlantLocationKeyName) : FVector::ZeroVector; }
+
+protected:
+	UFUNCTION()
+	void OnBombExploded(AActor* Bomb);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = AI)
@@ -61,6 +68,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
 	FName ExplosivePlantLocationKeyName = "ExplosivePlantLocation";
+
+private:
+	static TArray<AActor*> GBombsPlanted;
 
 	//~==============================================================================
 	// Components
