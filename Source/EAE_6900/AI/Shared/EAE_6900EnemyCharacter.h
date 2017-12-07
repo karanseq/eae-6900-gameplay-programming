@@ -15,6 +15,8 @@ class UBehaviorTree;
 class UPawnSensingComponent;
 class UWidgetComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnemyDiedSignature, AEAE_6900EnemyCharacter*, EnemyCharacter);
+
 UCLASS()
 class EAE_6900_API AEAE_6900EnemyCharacter : public ACharacter
 {
@@ -51,6 +53,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
 	float MaxHealth = 100.0f;
+
+	UPROPERTY(BlueprintAssignable, Category = AI)
+	FEnemyDiedSignature OnEnemyDied;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
+	bool bImmuneToExplosives = false;
 
 	//~==============================================================================
 	// Game Loop

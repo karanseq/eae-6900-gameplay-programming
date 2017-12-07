@@ -44,6 +44,7 @@ void AEAE_6900PlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("SetDestination", IE_Pressed, this, &AEAE_6900PlayerController::OnSetDestinationPressed);
 	InputComponent->BindAction("SetDestination", IE_Released, this, &AEAE_6900PlayerController::OnSetDestinationReleased);
+	InputComponent->BindAction("PlantExplosive", IE_Pressed, this, &AEAE_6900PlayerController::OnPlantExplosivePressed);
 }
 
 void AEAE_6900PlayerController::MoveToMouseCursor()
@@ -85,4 +86,12 @@ void AEAE_6900PlayerController::OnSetDestinationReleased()
 {
 	// clear flag to indicate we should stop updating the destination
 	bMoveToMouseCursor = false;
+}
+
+void AEAE_6900PlayerController::OnPlantExplosivePressed()
+{
+	if (AEAE_6900PlayerCharacter* PlayerCharacter = Cast<AEAE_6900PlayerCharacter>(GetPawn()))
+	{
+		PlayerCharacter->PlantExplosive();
+	}
 }

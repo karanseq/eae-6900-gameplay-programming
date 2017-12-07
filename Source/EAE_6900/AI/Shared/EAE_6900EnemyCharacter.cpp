@@ -13,6 +13,7 @@
 // game includes
 #include "AI/Shared/EAE_6900EnemyController.h"
 #include "Player/EAE_6900PlayerCharacter.h"
+#include "Shared/Explosive.h"
 
 // Sets default values
 AEAE_6900EnemyCharacter::AEAE_6900EnemyCharacter(const FObjectInitializer& ObjectInitializer)
@@ -49,7 +50,6 @@ void AEAE_6900EnemyCharacter::OnHearNoise(APawn* PawnInstigator, const FVector& 
 	{
 		if (PawnInstigator != this)
 		{
-			//GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Orange, FString::Printf(TEXT("Heard sound with volume %f at %s"), Volume, *Location.ToString()));
 			EnemyController->PlayerSighted(PawnInstigator);
 		}
 	}
@@ -58,16 +58,25 @@ void AEAE_6900EnemyCharacter::OnHearNoise(APawn* PawnInstigator, const FVector& 
 float AEAE_6900EnemyCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	const float PreviousHealth = Health;
+
+	if (bImmuneToExplosives &&
+		DamageCauser->IsA(AExplosive::StaticClass()))
+	{
+		return 0.0f;
+	}
+
 	Health -= Health > Damage ? Damage : Damage - Health;
 	ReceiveAnyDamage(PreviousHealth - Health, nullptr, nullptr, nullptr);
 
 	if (Health <= 0)
 	{
-		Die();
 		if (AEAE_6900EnemyController* EnemyController = Cast<AEAE_6900EnemyController>(GetController()))
 		{
 			EnemyController->GetBehaviorTreeComponent()->StopTree();
 		}
+
+		Die();
+		OnEnemyDied.Broadcast(this);
 	}
 	return PreviousHealth - Health;
 }

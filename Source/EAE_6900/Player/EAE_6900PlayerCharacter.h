@@ -11,6 +11,7 @@
 #include "EAE_6900PlayerCharacter.generated.h"
 
 // forward declarations
+class AExplosive;
 class UPawnNoiseEmitterComponent;
 class UWidgetComponent;
 
@@ -31,6 +32,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void Die();
 
+	void PlantExplosive();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnExplosivePlanted(AExplosive* ExplosivePlanted);
+
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	FORCEINLINE bool IsDead() const { return Health <= 0.0f; }
@@ -41,6 +46,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MaxHealth = 300.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AExplosive> ExplosiveClass;
 
 	//~==============================================================================
 	// Game Loop

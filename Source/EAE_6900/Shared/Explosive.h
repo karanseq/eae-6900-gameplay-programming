@@ -31,7 +31,7 @@ class EAE_6900_API AExplosive : public AActor
 	// Behavior
 
 public:
-	FORCEINLINE void SetTargetType(EExplosiveTargetType TargetTypeIn) { TargetType = TargetTypeIn; }
+	FORCEINLINE void SetTargetType(EExplosiveTargetType TargetTypeIn) { TargetType = TargetTypeIn; UpdateAppearance(); }
 	FORCEINLINE EExplosiveTargetType GetTargetType() const { return TargetType; }
 	FORCEINLINE float GetBaseDamage() const { return BaseDamage; }
 	FORCEINLINE float GetMinDamage() const { return MinDamage; }
@@ -40,6 +40,9 @@ public:
 protected:
 	void OnConstruction(const FTransform& Transform) override;
 	void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = Explosive)
+	void UpdateAppearance();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = Explosive)
 	void DoExplosionEffects();

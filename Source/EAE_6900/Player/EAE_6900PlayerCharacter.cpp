@@ -17,6 +17,7 @@
 #include "Materials/Material.h"
 
 // game includes
+#include "Shared/Explosive.h"
 
 AEAE_6900PlayerCharacter::AEAE_6900PlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -82,6 +83,20 @@ void AEAE_6900PlayerCharacter::MakeFootstepNoise()
 void AEAE_6900PlayerCharacter::MakeAttackNoise()
 {
 	MakeNoise(1.0f, this, GetActorLocation());
+}
+
+void AEAE_6900PlayerCharacter::PlantExplosive()
+{
+	static constexpr float PlantExplosiveOffset = 100.0f;
+	FTransform SpawnTransform(GetActorLocation() + GetActorForwardVector() * PlantExplosiveOffset);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	AExplosive* Bomb = GetWorld()->SpawnActor<AExplosive>(ExplosiveClass, SpawnTransform, SpawnParams);
+	Bomb->SetTargetType(EExplosiveTargetType::Enemy);
+
+	OnExplosivePlanted(Bomb);
 }
 
 float AEAE_6900PlayerCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
