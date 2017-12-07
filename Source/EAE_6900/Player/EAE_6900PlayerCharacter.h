@@ -12,6 +12,7 @@
 
 // forward declarations
 class UPawnNoiseEmitterComponent;
+class UWidgetComponent;
 
 UCLASS(Blueprintable)
 class AEAE_6900PlayerCharacter : public ACharacter
@@ -38,6 +39,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Health = 300.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MaxHealth = 300.0f;
+
 	//~==============================================================================
 	// Game Loop
 public:
@@ -54,6 +58,7 @@ public:
 	/** Returns CursorToWorld subobject **/
 	FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }
 	FORCEINLINE class UPawnNoiseEmitterComponent* GetNoiseEmitter() const { return NoiseEmitter; }
+	FORCEINLINE class UWidgetComponent* GetHealthBar() const { return HealthBar; }
 
 private:
 	/** Top down camera */
@@ -68,7 +73,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent* CursorToWorld;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UPawnNoiseEmitterComponent* NoiseEmitter;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* HealthBar;
 };
 

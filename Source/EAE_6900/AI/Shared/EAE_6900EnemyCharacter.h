@@ -13,6 +13,7 @@
 // forward declarations
 class UBehaviorTree;
 class UPawnSensingComponent;
+class UWidgetComponent;
 
 UCLASS()
 class EAE_6900_API AEAE_6900EnemyCharacter : public ACharacter
@@ -48,6 +49,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
 	float Health = 100.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AI)
+	float MaxHealth = 100.0f;
+
 	//~==============================================================================
 	// Game Loop
 protected:
@@ -57,5 +61,14 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	//~==============================================================================
+	// Components
+public:
+	FORCEINLINE UWidgetComponent* GetHealthBar() const { return HealthBar; }
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* HealthBar = nullptr;
 
 };

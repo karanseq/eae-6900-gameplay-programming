@@ -4,10 +4,15 @@
 
 // engine includes
 #include "BehaviorTree/BehaviorTree.h"
+#include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Perception/PawnSensingComponent.h"
 
 // game includes
 #include "AI/Shared/EAE_6900EnemyController.h"
+#include "Player/EAE_6900PlayerCharacter.h"
 
 // Sets default values
 AEAE_6900EnemyCharacter::AEAE_6900EnemyCharacter(const FObjectInitializer& ObjectInitializer)
@@ -21,6 +26,10 @@ AEAE_6900EnemyCharacter::AEAE_6900EnemyCharacter(const FObjectInitializer& Objec
 	PawnSensingComponent->SightRadius = 1500.0f;
 	PawnSensingComponent->HearingThreshold = 500.0f;
 	PawnSensingComponent->LOSHearingThreshold = 1000.0f;
+
+	HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
+	HealthBar->SetCollisionProfileName(TEXT("NoCollision"));
+	HealthBar->SetupAttachment(RootComponent);
 }
 
 //~==============================================================================
@@ -40,7 +49,7 @@ void AEAE_6900EnemyCharacter::OnHearNoise(APawn* PawnInstigator, const FVector& 
 	{
 		if (PawnInstigator != this)
 		{
-			GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Orange, FString::Printf(TEXT("Heard sound with volume %f at %s"), Volume, *Location.ToString()));
+			//GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Orange, FString::Printf(TEXT("Heard sound with volume %f at %s"), Volume, *Location.ToString()));
 			EnemyController->PlayerSighted(PawnInstigator);
 		}
 	}
@@ -50,6 +59,8 @@ float AEAE_6900EnemyCharacter::TakeDamage(float Damage, struct FDamageEvent cons
 {
 	const float PreviousHealth = Health;
 	Health -= Health > Damage ? Damage : Damage - Health;
+	ReceiveAnyDamage(PreviousHealth - Health, nullptr, nullptr, nullptr);
+
 	if (Health <= 0)
 	{
 		Die();
@@ -76,4 +87,12 @@ void AEAE_6900EnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (HealthBar != nullptr)
+	{
+		if (AEAE_6900PlayerCharacter* PlayerCharacter = Cast<AEAE_6900PlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+		{
+			const FRotator LookAtCamera = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCharacter->GetTopDownCameraComponent()->GetComponentLocation());
+			HealthBar->SetWorldRotation(LookAtCamera);
+		}
+	}
 }

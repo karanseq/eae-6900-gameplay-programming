@@ -5,12 +5,15 @@
 // engine includes
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
+#include "Engine/CollisionProfile.h"
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PawnNoiseEmitterComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Materials/Material.h"
 
 // game includes
@@ -62,6 +65,10 @@ AEAE_6900PlayerCharacter::AEAE_6900PlayerCharacter(const FObjectInitializer& Obj
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
+	HealthBar->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+	HealthBar->SetupAttachment(RootComponent);
 }
 
 //~==============================================================================
@@ -81,6 +88,7 @@ float AEAE_6900PlayerCharacter::TakeDamage(float Damage, struct FDamageEvent con
 {
 	const float PreviousHealth = Health;
 	Health -= Health > Damage ? Damage : Damage - Health;
+	ReceiveAnyDamage(PreviousHealth - Health, nullptr, nullptr, nullptr);
 	if (Health <= 0)
 	{
 		Die();
@@ -106,5 +114,11 @@ void AEAE_6900PlayerCharacter::Tick(float DeltaSeconds)
 			CursorToWorld->SetWorldLocation(TraceHitResult.Location);
 			CursorToWorld->SetWorldRotation(CursorR);
 		}
+	}
+
+	if (HealthBar != nullptr)
+	{
+		const FRotator LookAtCamera = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TopDownCameraComponent->GetComponentLocation());
+		HealthBar->SetWorldRotation(LookAtCamera);
 	}
 }
